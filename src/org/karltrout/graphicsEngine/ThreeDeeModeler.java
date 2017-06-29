@@ -1,6 +1,5 @@
 package org.karltrout.graphicsEngine;
 
-import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
@@ -26,7 +25,7 @@ public class ThreeDeeModeler {
 
     public static void main(String[] args){
         if(!glfwInit()){
-            throw new IllegalStateException(" Could NOt init GLFW system. exiting.");
+            throw new IllegalStateException(" Could Not init GLFW system. exiting.");
         }
 
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
