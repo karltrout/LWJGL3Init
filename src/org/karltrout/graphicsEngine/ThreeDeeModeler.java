@@ -1,89 +1,115 @@
 package org.karltrout.graphicsEngine;
 
-import org.lwjgl.glfw.GLFWErrorCallback;
-import org.lwjgl.glfw.GLFWVidMode;
+import org.karltrout.graphicsEngine.renderers.AppRenderer;
 import org.lwjgl.opengl.GL;
-import org.lwjgl.system.MemoryStack;
+import org.lwjgl.system.MemoryUtil;
 
-import java.nio.IntBuffer;
+import java.nio.FloatBuffer;
 
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL11.GL_FLOAT;
+import static org.lwjgl.opengl.GL15.*;
+import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
+import static org.lwjgl.opengl.GL30.glBindVertexArray;
+import static org.lwjgl.opengl.GL30.glGenVertexArrays;
+import static org.lwjgl.system.MemoryUtil.memFree;
 
 /**
  * The Beginning of 3D Modeler.
  * Created by karltrout on 6/29/17.
  */
-public class ThreeDeeModeler {
+public class ThreeDeeModeler implements Runnable {
 
 
-    private static long window;
+    private static Window window;
+    private static int vaoID;
+    private AppRenderer renderer;
 
-    public ThreeDeeModeler() {
+    public void run() {
+
+        try {
+
+            init();
+            loop();
+
+            glfwFreeCallbacks(window.id);
+            glfwDestroyWindow(window.id);
+
+        }
+        catch (Exception exception){
+            exception.printStackTrace();
+        }
+        finally {
+
+            if(renderer != null) renderer.cleanUp();
+
+            glfwTerminate();
+            glfwSetErrorCallback(null).free();
+
+        }
+
     }
 
-    public static void main(String[] args){
-        if(!glfwInit()){
+    private void init() {
+
+        if (!glfwInit()) {
             throw new IllegalStateException(" Could Not init GLFW system. exiting.");
         }
 
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-        glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-        glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
-
-        window = glfwCreateWindow(680, 470, "Three DEE Modeler",0,0);
-
-        if (window == 0){
-
-            throw new RuntimeException(" Could Not init GLFW window. exiting.");
-        }
-
-        GLFWErrorCallback.createPrint(System.err).set();
-
-        glfwSetKeyCallback(window, (window, key, scancode, action, mods) -> {
-           if(key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE){
-               glfwSetWindowShouldClose(window, true);
-           }
-        });
-
-        try (MemoryStack stack = MemoryStack.stackPush()){
-            IntBuffer pWidth = stack.mallocInt(1);
-            IntBuffer pHeight = stack.mallocInt(1);
-
-            glfwGetWindowSize(window, pWidth, pHeight);
-
-            GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-
-            glfwSetWindowPos(window, (vidmode.width() - pWidth.get(0)) / 2, (vidmode.height()-pHeight.get(0))/2);
-
-        }
-
-
-        glfwMakeContextCurrent(window);
-        glfwSwapInterval(1);
-        glfwShowWindow(window);
+        window = new Window("Three DEE Modeler", 640, 480);
 
         GL.createCapabilities();
 
-        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+        renderer = new AppRenderer(window);
 
-        while (!glfwWindowShouldClose(window)){
+        float[] vertices = new float[]{
+                0.0f, 0.5f, 0.0f,
+                -0.5f, -0.5f, 0.0f,
+                0.5f, -0.5f, 0.0f
+        };
 
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        // USE JOML Here...
+        FloatBuffer floatBuffer = MemoryUtil.memAllocFloat(vertices.length);
+        floatBuffer.put(vertices).flip();
 
-            glfwSwapBuffers(window);
+        /* Generate a Vertex Array Object VAO. this
+            object will be what is current until unbound
+        */
+        vaoID = glGenVertexArrays();
+        glBindVertexArray(vaoID);
+        /*Generate a Vertex Buffer Object VBO. these are used for all kinds of things.
+          We are gonna put our float buffer array in this one.
+         */
+        int vboID = glGenBuffers();
+        glBindBuffer(GL_ARRAY_BUFFER, vboID);
+        glBufferData(GL_ARRAY_BUFFER, floatBuffer, GL_STATIC_DRAW);
+        memFree(floatBuffer);
 
+        // Define Vertex Buffer Data to the shaders as an attribute.
+        glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0);
+
+        //unbind the VBo and the VAO
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
+        memFree(floatBuffer);
+
+    }
+
+    private void loop(){
+
+        while (!glfwWindowShouldClose(window.id)){
+            renderer.render(vaoID);
+            glfwSwapInterval(1);
+            glfwSwapBuffers(window.id);
             glfwPollEvents();
         }
+    }
 
-        glfwFreeCallbacks(window);
-        glfwDestroyWindow(window);
+    public static void main(String[] args){
 
+        ThreeDeeModeler modeler = new ThreeDeeModeler();
+        modeler.run();
 
-        glfwTerminate();
-
-        glfwSetErrorCallback(null).free();
     }
 }
