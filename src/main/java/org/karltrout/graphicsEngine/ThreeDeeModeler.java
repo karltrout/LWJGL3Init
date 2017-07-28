@@ -127,8 +127,8 @@ public class ThreeDeeModeler implements Runnable {
         bunnyEntity.makeWireFrame(true);
         entities.add(bunnyEntity);
 
-        Path pathToFltHdr = Paths.get("/Users/karltrout/Downloads/n34w112/floatn34w112_13.hdr");
-        Path pathToFltFile = Paths.get("/Users/karltrout/Downloads/n34w112/floatn34w112_13.flt");
+        Path pathToFltHdr = Paths.get("resources/models/terrainModels/floatn34w112_13.hdr");
+        Path pathToFltFile = Paths.get("resources/models/terrainModels/floatn34w112_13.flt");
 
         try {
         FltFileReader fltFileReader = FltFileReader.loadFltFile(pathToFltFile, pathToFltHdr);
