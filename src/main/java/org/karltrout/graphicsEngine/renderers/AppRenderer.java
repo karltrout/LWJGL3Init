@@ -17,9 +17,6 @@ import static org.lwjgl.opengl.GL11.glPolygonMode;
 public class AppRenderer {
 
     private DefaultShader appShader;
-
-    private Window window;
-
     private Camera camera;
 
     private static final float FOV = (float) Math.toRadians(70);
@@ -31,32 +28,15 @@ public class AppRenderer {
     private static float GREEN = 0.0f;
     private static float BLUE = 0.0f;
 
-    Transformation transformation;
+    private Transformation transformation;
 
-    public AppRenderer(Window window, Camera camera) throws Exception {
-
-        this.window = window;
+    public AppRenderer( Camera camera ) throws Exception {
         this.camera = camera;
-
-        appShader = new DefaultShader();
-
-        transformation = new Transformation();
-
-        //appShader.createUniform("worldMatrix");
-        appShader.createUniform("projectionMatrix");
-        appShader.createUniform("modelViewMatrix");
-
-
     }
 
-    public void render(Entity[] entities) {
+    public void render(Entity[] entities, Window window) {
 
         prepare();
-
-        if (window.isResized()) {
-            glViewport(0, 0, window.getWidth(), window.getHeight());
-            window.setResized(false);
-        }
 
         appShader.start();
         // Update projection Matrix
@@ -100,4 +80,15 @@ public class AppRenderer {
 
     }
 
+    public void init() throws Exception{
+
+        appShader = new DefaultShader();
+
+        transformation = new Transformation();
+
+        //appShader.createUniform("worldMatrix");
+        appShader.createUniform("projectionMatrix");
+        appShader.createUniform("modelViewMatrix");
+
+    }
 }

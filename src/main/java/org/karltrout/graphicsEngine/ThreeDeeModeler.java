@@ -1,7 +1,5 @@
 package org.karltrout.graphicsEngine;
 
-import org.karltrout.graphicsEngine.renderers.AppRenderer;
-
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
 
@@ -23,7 +21,7 @@ public class ThreeDeeModeler implements Runnable {
         this.envLogic = logic;
     }
 
-    public void start() {
+    private void start() {
         String osName = System.getProperty("os.name");
         if ( osName.contains("Mac") ) {
             loopThread.run();
@@ -77,9 +75,9 @@ public class ThreeDeeModeler implements Runnable {
 
     public static void main(String[] args){
         try {
-            boolean vSync = true;
+
             ILogic envLogic = new Logic();
-            ThreeDeeModeler engine = new ThreeDeeModeler("3D Modeler", 640, 480, vSync, envLogic);
+            ThreeDeeModeler engine = new ThreeDeeModeler("3D Modeler", 640, 480, true, envLogic);
             engine.start();
 
         } catch (Exception excp) {

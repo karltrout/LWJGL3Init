@@ -20,7 +20,7 @@ public class Window {
 
     private int height;
     private int width;
-    public long id;
+    private long id;
     private boolean resized = false;
 
     Window(String title, int width, int height, boolean vsync){
@@ -29,11 +29,13 @@ public class Window {
         this.width = width;
         this.title = title;
 
-        //init();
     }
 
     public void init() {
 
+        if (!glfwInit()) {
+            throw new IllegalStateException(" Could Not init GLFW system. exiting.");
+        }
 
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
@@ -41,7 +43,6 @@ public class Window {
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
         glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
-
 
         //size up the initial window
         id = glfwCreateWindow(width, height, title, 0, 0);
@@ -84,6 +85,7 @@ public class Window {
         glfwMakeContextCurrent(id);
         glfwSwapInterval(1);
         glfwShowWindow(id);
+
         GL.createCapabilities();
 
     }
@@ -111,4 +113,5 @@ public class Window {
     public long getWindowHandle() {
         return id;
     }
+
 }

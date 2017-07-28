@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * yeah this needs a lot of work...
  * Created by karltrout on 6/9/17.
  */
 public class OBJLoader {
