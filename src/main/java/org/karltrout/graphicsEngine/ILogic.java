@@ -6,8 +6,8 @@ package org.karltrout.graphicsEngine;
  */
 public interface ILogic {
     void init() throws Exception;
-    void input(Window window);
-    void update(float interval);
+    void input(Window window, Mouse mouse);
+    void update(float interval, Mouse mouse);
     void render(Window window);
     void cleanUp();
 }

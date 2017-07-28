@@ -11,14 +11,23 @@ public class ThreeDeeModeler implements Runnable {
 
     private static Window window;
     private final ILogic envLogic;
+    public static final int TARGET_FPS = 75;
+    public static final int TARGET_UPS = 30;
 
     private final Thread loopThread;
+    private Mouse mouse;
+
+    private final Timer timer;
+
 
     public ThreeDeeModeler(String windowTitle, int width, int height, boolean vsSync, ILogic logic) {
 
         loopThread = new Thread(this, "3D_ENGINE_LOOP_THREAD");
         window = new Window(windowTitle, width, height, vsSync);
+        mouse = new Mouse();
         this.envLogic = logic;
+
+        timer = new Timer();
     }
 
     private void start() {
@@ -58,19 +67,63 @@ public class ThreeDeeModeler implements Runnable {
 
         window.init();
         envLogic.init();
+        mouse.init(window);
 
+    }
+
+    protected void input() {
+        mouse.input(window);
+        envLogic.input(window, mouse);
     }
 
     private void loop(){
 
+        float elapsedTime;
+        float accumulator = 0f;
+        float interval = 1f / TARGET_UPS;
+
         while (!glfwWindowShouldClose(window.getWindowHandle())){
 
-            envLogic.render(window);
-            glfwSwapInterval(1);
-            glfwSwapBuffers(window.getWindowHandle());
-            glfwPollEvents();
+            elapsedTime = timer.getElapsedTime();
+            accumulator += elapsedTime;
+
+            input();
+
+            while (accumulator >= interval) {
+                update(interval);
+                accumulator -= interval;
+            }
+
+            render();
+
+            if ( !window.isvSync() ) {
+                sync();
+            }
 
         }
+
+    }
+
+    private void sync() {
+        float loopSlot = 1f / TARGET_FPS;
+        double endTime = timer.getLastLoopTime() + loopSlot;
+        while (timer.getTime() < endTime) {
+            try {
+                Thread.sleep(1);
+            } catch (InterruptedException ie) {
+            }
+        }
+    }
+
+
+    protected void update(float interval) {
+        envLogic.update(interval, mouse);
+    }
+
+
+    protected void render() {
+        envLogic.render(window);
+        window.update();
     }
 
     public static void main(String[] args){

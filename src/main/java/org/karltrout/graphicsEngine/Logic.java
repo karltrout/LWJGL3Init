@@ -1,5 +1,7 @@
 package org.karltrout.graphicsEngine;
 
+import org.joml.Vector2f;
+import org.joml.Vector3f;
 import org.karltrout.graphicsEngine.models.Entity;
 import org.karltrout.graphicsEngine.models.Mesh;
 import org.karltrout.graphicsEngine.renderers.AppRenderer;
@@ -10,6 +12,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 
+import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.glViewport;
 
 /**
@@ -19,11 +22,17 @@ import static org.lwjgl.opengl.GL11.glViewport;
 public class Logic implements ILogic {
 
     private final AppRenderer renderer;
+    private final Vector3f cameraInc;
+    private final Camera camera;
     private ArrayList<Entity> entities = new ArrayList<>();
+    private static final float MOUSE_SENSITIVITY = 0.2f;
+    private static final float CAMERA_POS_STEP = 0.05f;
 
     public Logic() throws Exception {
-        Camera camera = new Camera();
+        camera = new Camera();
         renderer = new AppRenderer(camera);
+
+        cameraInc = new Vector3f(0, 0, 0);
     }
 
     @Override
@@ -61,13 +70,37 @@ public class Logic implements ILogic {
     }
 
     @Override
-    public void input(Window window) {
-
+    public void input(Window window, Mouse mouse) {
+        cameraInc.set(0, 0, 0);
+        if (window.isKeyPressed(GLFW_KEY_W)) {
+            cameraInc.z = -1;
+        } else if (window.isKeyPressed(GLFW_KEY_S)) {
+            cameraInc.z = 1;
+        }
+        if (window.isKeyPressed(GLFW_KEY_A)) {
+            cameraInc.x = -1;
+        } else if (window.isKeyPressed(GLFW_KEY_D)) {
+            cameraInc.x = 1;
+        }
+        if (window.isKeyPressed(GLFW_KEY_Z)) {
+            cameraInc.y = -1;
+        } else if (window.isKeyPressed(GLFW_KEY_X)) {
+            cameraInc.y = 1;
+        }
     }
 
     @Override
-    public void update(float interval) {
-
+    public void update(float interval, Mouse mouse) {
+        // Update camera position
+        camera.movePosition(cameraInc.x * CAMERA_POS_STEP,
+                cameraInc.y * CAMERA_POS_STEP,
+                cameraInc.z * CAMERA_POS_STEP);
+        // Update camera based on mouse
+        if (mouse.isRightButtonPressed()) {
+            Vector2f rotVec = mouse.getDisplVec();
+            camera.moveRotation(rotVec.x * MOUSE_SENSITIVITY, rotVec.y * MOUSE_SENSITIVITY
+                    , 0);
+        }
     }
 
     @Override

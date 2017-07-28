@@ -22,12 +22,14 @@ public class Window {
     private int width;
     private long id;
     private boolean resized = false;
+    private boolean vSync;
 
     Window(String title, int width, int height, boolean vsync){
 
         this.height = height;
         this.width = width;
         this.title = title;
+        this.vSync = vsync;
 
     }
 
@@ -43,6 +45,7 @@ public class Window {
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
         glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+
 
         //size up the initial window
         id = glfwCreateWindow(width, height, title, 0, 0);
@@ -83,7 +86,12 @@ public class Window {
         }
 
         glfwMakeContextCurrent(id);
-        glfwSwapInterval(1);
+
+        if (isvSync()) {
+            // Enable v-sync
+            glfwSwapInterval(1);
+        }
+
         glfwShowWindow(id);
 
         GL.createCapabilities();
@@ -112,6 +120,20 @@ public class Window {
 
     public long getWindowHandle() {
         return id;
+    }
+
+
+    public boolean isvSync() {
+        return vSync;
+    }
+
+    public void setvSync(boolean vSync) {
+        this.vSync = vSync;
+    }
+
+    public void update() {
+        glfwSwapBuffers(id);
+        glfwPollEvents();
     }
 
 }
