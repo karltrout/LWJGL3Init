@@ -140,6 +140,14 @@ public class FltFileReader {
             this.noDataVal = noDataVal;
 
         }
+
+        public float getLatitude(){
+            Number size = yllcorner + (nrows * cellsize);
+            return size.floatValue();
+        }
+        public float getLongitude(){
+            return xllcorner;
+        }
         @Override
         public String toString(){
             return "FltHeader -> Cols:"+ncols+" Rows:"+nrows+" X:"+xllcorner+

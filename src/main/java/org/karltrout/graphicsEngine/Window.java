@@ -96,6 +96,8 @@ public class Window {
 
         GL.createCapabilities();
 
+        System.out.println("Completed Window Initialization.");
+
     }
 
     public boolean isKeyPressed(int keyCode) {

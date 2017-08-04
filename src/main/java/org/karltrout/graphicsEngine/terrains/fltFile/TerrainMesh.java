@@ -2,6 +2,7 @@ package org.karltrout.graphicsEngine.terrains.fltFile;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.karltrout.graphicsEngine.OBJLoader;
 import org.karltrout.graphicsEngine.models.Mesh;
@@ -17,13 +18,13 @@ public class TerrainMesh {
 
     //public static final int RESOLUTION_FACTOR = 1;
     public static final float GEO_ARC_SECOND_METER_DISTANCE = 30.87f;
-    public static final int GRID_SIZE_METERS = 901;
+    public static final int GRID_SIZE = 901;
 
     // Want to use this instead of hard coding the divisor
     // static final float GEO_ARC_SECOND_RESOLUTION = 1 / 3;
     private static final int MIN_RESOLUTION = 12 ;
     private final FltFileReader.FltHeader hdr;
-    private int resolution = 12;
+    private int resolution = 1;
 
     private OBJLoader objLoader;
 
@@ -46,23 +47,36 @@ public class TerrainMesh {
          30.87 m * cos lon degrees
        */
 
-        float latSize = getLatitudePointLength();
-        float lonSize = getLongitudePointLength();
+        //float latSize = getLatitudePointLength();
+        //float lonSize = getLongitudePointLength();
 
       //  logger.debug("Size of tex Coords: "+ getTexCoords().size());
 
-        int colLength = GRID_SIZE_METERS;
-        int rowlength = GRID_SIZE_METERS;
+        int colLength = GRID_SIZE;
+        int rowlength = GRID_SIZE;
+        Number xx = 0;
+        Number zz = 0;
+        Number latitudePoint = 0;
+        float latSize = getLatitudePointLength( hdr.getLatitude());
         ArrayList<Vector3f> vertices = new ArrayList<>();
-        for (int x = 0; x < rowlength; x++ ) {
+        for (int z = 0; z < rowlength; z++ ) {
             // read in the first x rows and first x cols(for now)
             // Points are fltFile height by hdr.cellsize width and length ( a square )
-            for ( int z = 0 ; z < colLength; z++ ){
+            latitudePoint = (z > 0)?(hdr.getLatitude() + ((z*resolution)/hdr.nrows) * 3600): hdr.getLatitude();
+            latSize = getLatitudePointLength( latitudePoint );
+            float lonSize = getLongitudePointLength(latitudePoint).floatValue();
+
+            for ( int x = 0 ; x < colLength; x++ ){
+
                 int xResolution = x * resolution;
                 int zResolution = z * resolution;
-                Vector3f vector3f = new Vector3f(z*latSize, fltFile.data[xResolution][zResolution], x*lonSize);
+                //Vector3f vector3f = new Vector3f(x*latSize, fltFile.data[xResolution][zResolution], z*lonSize);
+                Vector3f vector3f = new Vector3f( z*latSize, fltFile.data[xResolution][zResolution], x*lonSize);
                 vertices.add(vector3f);
+                xx = x*lonSize;
+                zz = z*latSize;
             }
+
         }
 
         objLoader.setVertices(vertices);
@@ -72,26 +86,29 @@ public class TerrainMesh {
         //The Original loader takes data from a text file...
         ArrayList<String[][]>faceList = new ArrayList<>();
 
-        for (int x = 0; x < rowlength - 1 ; x++) {
+        for (int x = 0; x < rowlength -1 ; x++) {
             for (int z = 1; z < colLength  ; z++) {
-                int tl = x * rowlength + z; // top-left
-                int bl = x * rowlength + z + 1; // bottom-left
-                int tr = (x + 1) * rowlength + z; // top-right
-                int br = (x + 1) * rowlength + z + 1; // bottom-right
-                //getFaces().addAll(bl, 0, tl, 0, tr, 0); original I think javaFx odes counterclockwise triangles?
-                //getFaces().addAll(tr, 0, br, 0, bl, 0);
-                String[][] faceVector = new String[3][3];
-                faceVector[0] = String.valueOf(tl).split("/");
-                faceVector[1] = String.valueOf(bl).split("/");
-                faceVector[2] = String.valueOf(tr).split("/");
-               faceList.add(faceVector);
-                String[][] faceVector2 = new String[3][3];
-                faceVector2[0] = String.valueOf(tr).split("/");
-                faceVector2[1] = String.valueOf(bl).split("/");
-                faceVector2[2] = String.valueOf(br).split("/");
-                faceList.add(faceVector2);
+
+                    int tl = x * rowlength + z; // top-left
+                    int bl = x * rowlength + z + 1; // bottom-left
+                    int tr = (x + 1) * rowlength + z; // top-right
+                    int br = (x + 1) * rowlength + z + 1; // bottom-right
+
+                    String[][] faceVector = new String[3][3];
+                    faceVector[0] = String.valueOf(tl).split("/");
+                    faceVector[1] = String.valueOf(bl).split("/");
+                    faceVector[2] = String.valueOf(tr).split("/");
+                    faceList.add(faceVector);
+
+                    String[][] faceVector2 = new String[3][3];
+                    faceVector2[0] = String.valueOf(tr).split("/");
+                    faceVector2[1] = String.valueOf(bl).split("/");
+                    faceVector2[2] = String.valueOf(br).split("/");
+                    faceList.add(faceVector2);
+
             }
         }
+
         objLoader.setFaces(faceList);
         logger.debug("Number of Faces: "+faceList.size());
     }
@@ -103,21 +120,50 @@ public class TerrainMesh {
     public Mesh buildMesh(){
         return objLoader.build();
     }
-    private float getLatitudePointLength(){
-        return  (GEO_ARC_SECOND_METER_DISTANCE/3.0f) * resolution;
+
+    private float getLatitudePointLength(Number latitude){
+        //return  (float)((GEO_ARC_SECOND_METER_DISTANCE/3.0f)* resolution);
+        Number length = getLatitudeLength(latitude);
+        return  (length.floatValue() / hdr.nrows) * resolution;
     }
 
    /* public float getLatitudeLength(){
-        return getLatitudePointLength() * GRID_SIZE_METERS * (MIN_RESOLUTION/resolution);
+        return getLatitudePointLength() * GRID_SIZE * (MIN_RESOLUTION/resolution);
     }
     */
 
-    private float getLongitudePointLength(){
-        Number lonMultiplyer = Math.cos(Math.toRadians(hdr.yllcorner));
-        return ((GEO_ARC_SECOND_METER_DISTANCE * lonMultiplyer.floatValue()) / 3.0f) * resolution;
+    private Number getLongitudePointLength(Number latitude){
+        return getLongitudeLength(latitude) * resolution;
+    }
+
+    public Vector3f getWorldPosition(Vector2f latlong) {
+        Vector3f results = new Vector3f(0,0,0);
+        float latDelta = hdr.getLatitude() - latlong.x;
+        float longDelta = hdr.getLongitude() - latlong.y;
+        results.set(longDelta * getLongitudeMetersPerDegree(latlong.x).floatValue(), 200, latDelta * getLatitudeMetersPerDegree(latlong.x).floatValue());
+        return results;
+    }
+
+    private Number getLatitudeMetersPerDegree(Number latitude){
+        return GEO_ARC_SECOND_METER_DISTANCE * 3600 * Math.cos(Math.toRadians(latitude.doubleValue()));
+       // return getLatitudeLength(latitude) ;
+    }
+
+    private Number getLongitudeMetersPerDegree(Number latitude){
+        return getLongitudeLength(latitude);
+    }
+
+    private double getLongitudeLength(Number latitude) {
+        Number lonMultiplier = Math.cos(Math.toRadians(latitude.doubleValue()));
+        return ((GEO_ARC_SECOND_METER_DISTANCE  / 3.0f)* lonMultiplier.floatValue());
+    }
+
+    private double getLatitudeLength(Number latitude){
+        double results =  (111132.954d - (559.822d * Math.cos( 2d * Math.toRadians(latitude.doubleValue()))) + (1.175d * Math.cos( 4d * Math.toRadians(latitude.doubleValue()) )));
+        return results;
     }
 
     /*public float getLongitudeLength(){
-        return getLongitudePointLength() * GRID_SIZE_METERS;
+        return getLongitudePointLength() * GRID_SIZE;
     }*/
 }

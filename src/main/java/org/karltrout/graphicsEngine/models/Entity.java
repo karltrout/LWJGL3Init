@@ -1,6 +1,9 @@
 package org.karltrout.graphicsEngine.models;
 
+import org.joml.Vector2f;
 import org.joml.Vector3f;
+import org.karltrout.graphicsEngine.Location;
+import org.karltrout.graphicsEngine.terrains.fltFile.TerrainMesh;
 
 /**
  * An Object in the World.
@@ -15,6 +18,8 @@ public class Entity {
     private float scale;
     private final Vector3f rotation;
     private Boolean wireMesh = false;
+    private TerrainMesh currentTerrain;
+    private Location location;
 
     public Entity(Mesh mesh) {
         this.mesh = mesh;
@@ -61,5 +66,22 @@ public class Entity {
 
     public void makeWireFrame(Boolean wireFrame){
         wireMesh = wireFrame;
+    }
+
+    public void setLocation(Vector2f latlong) {
+
+        if (this.currentTerrain != null){
+            Vector3f pos = currentTerrain.getWorldPosition(latlong);
+            setPosition(pos.x, pos.y, pos.z);
+        }
+
+        this.location = new Location(this.position, latlong);
+
+        System.out.println("Entity "+location);
+        System.out.println("Entity Position  X: "+position.x + " Y: " + position.y + " Z: "+position.z);
+    }
+
+    public void setTerrain(TerrainMesh terrainMesh) {
+        this.currentTerrain = terrainMesh;
     }
 }

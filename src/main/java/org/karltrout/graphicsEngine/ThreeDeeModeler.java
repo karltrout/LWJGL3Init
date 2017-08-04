@@ -1,5 +1,7 @@
 package org.karltrout.graphicsEngine;
 
+import javafx.application.Application;
+
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
 
@@ -20,7 +22,7 @@ public class ThreeDeeModeler implements Runnable {
     private final Timer timer;
 
 
-    public ThreeDeeModeler(String windowTitle, int width, int height, boolean vsSync, ILogic logic) {
+    public ThreeDeeModeler (String windowTitle, int width, int height, boolean vsSync, ILogic logic) {
 
         loopThread = new Thread(this, "3D_ENGINE_LOOP_THREAD");
         window = new Window(windowTitle, width, height, vsSync);

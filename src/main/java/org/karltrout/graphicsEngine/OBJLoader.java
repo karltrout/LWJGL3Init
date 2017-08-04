@@ -94,8 +94,8 @@ public class OBJLoader {
     public void setVertices(List<Vector3f> vertices){
 
         this.vertices = vertices;
-        textureArray = new float[this.vertices.size() * 2];
-        normalsArray = new float[this.vertices.size() * 3];
+        textureArray = new float[ this.vertices.size() * 2 ];
+        normalsArray = new float[ this.vertices.size() * 3 ];
 
     }
 
@@ -157,7 +157,7 @@ public class OBJLoader {
             normalsArray[currentVertexPointer * 3 + 2] = currentNorm.z;
         }
         else{
-            normalsArray[(currentVertexPointer) * 3] =0 ;
+            normalsArray[(currentVertexPointer) * 3] = 0 ;
             normalsArray[(currentVertexPointer) * 3 + 1] = 0 ;
             normalsArray[(currentVertexPointer) * 3 + 2] =0;
 

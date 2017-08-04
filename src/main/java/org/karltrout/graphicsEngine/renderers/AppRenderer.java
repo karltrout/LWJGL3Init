@@ -19,9 +19,9 @@ public class AppRenderer {
     private DefaultShader appShader;
     private Camera camera;
 
-    private static final float FOV = (float) Math.toRadians(70);
-    private static final float NEAR_PLANE = 0.1f;
-    private static final float FAR_PLANE = 10000.0f;
+    private static final float FOV = (float) Math.toRadians(60);
+    private static final float NEAR_PLANE = .5f;
+    private static final float FAR_PLANE = 12000000.0f;
 
     //SKY COLOR  = 83.1, 94.5, 97.3
     private static float RED = 0.0f;
