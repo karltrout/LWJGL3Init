@@ -5,7 +5,7 @@ package org.karltrout.graphicsEngine.terrains.fltFile;
  */
 public class FltFile {
 
-    final float[][] data;
+    public final float[][] data;
 
     FltFile(int rows, int cols){
         data = new float[rows][cols];

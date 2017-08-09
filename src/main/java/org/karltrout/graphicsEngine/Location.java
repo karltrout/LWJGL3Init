@@ -52,7 +52,6 @@ public class Location {
         }
         try {
 
-            //testBasePosition();
             calc.setStartingGeographicPoint(this.latlong.y, this.latlong.x);
 
             calc.setDirection(0.0f, this.worldPosition.distance(0, 0, 0));
@@ -60,6 +59,7 @@ public class Location {
             Number x = dp.getX();
             Number y = dp.getY();
             return new Vector2f(x.floatValue(), y.floatValue());
+
         }catch (IllegalArgumentException iae){
             System.out.println(iae.getLocalizedMessage());
             iae.printStackTrace();

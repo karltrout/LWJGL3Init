@@ -2,12 +2,12 @@ package org.karltrout.graphicsEngine;
 
 import org.joml.Vector2f;
 import org.joml.Vector3f;
+import org.karltrout.graphicsEngine.Geodesy.GeoSpacialTerrainMesh;
 import org.karltrout.graphicsEngine.Geodesy.ReferenceEllipsoid;
 import org.karltrout.graphicsEngine.models.Entity;
 import org.karltrout.graphicsEngine.models.Mesh;
 import org.karltrout.graphicsEngine.renderers.AppRenderer;
 import org.karltrout.graphicsEngine.terrains.fltFile.FltFileReader;
-import org.karltrout.graphicsEngine.terrains.fltFile.TerrainMesh;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -27,14 +27,12 @@ public class Logic implements ILogic {
     private final Camera camera;
     private ArrayList<Entity> entities = new ArrayList<>();
     private static final float MOUSE_SENSITIVITY = 0.2f;
-    private static final float CAMERA_POS_STEP = 100.0f;
+    private static final float CAMERA_POS_STEP = 200.0f;
+    private static final float scaleFactor = 1f;
 
     public Logic() throws Exception {
         camera = new Camera();
-        camera.setPosition(0, 2000, 0);
-        camera.setRotation(0f,-180, 0);
         renderer = new AppRenderer(camera);
-
         cameraInc = new Vector3f(0, 0, 0);
     }
 
@@ -59,36 +57,41 @@ public class Logic implements ILogic {
         try {
             FltFileReader fltFileReader = FltFileReader.loadFltFile(pathToFltFile, pathToFltHdr);
 
-            TerrainMesh mesh_12 = new TerrainMesh(fltFileReader.hdr, fltFileReader.fltFile, 12);
+            /*TerrainMesh mesh_12 = new TerrainMesh(fltFileReader.hdr, fltFileReader.fltFile, 12);
             Mesh terrainMesh12 = mesh_12.buildMesh();
             Entity terrainEntity12 = new Entity(terrainMesh12);
             terrainEntity12.setPosition(0, 0, 0);
             terrainEntity12.makeWireFrame(true);
             entities.add(terrainEntity12);
-
+            */
             Mesh elipsoid =  ReferenceEllipsoid.referenceElipsoidMesh().build();
 
             Entity planetEarth = new Entity(elipsoid);
-            planetEarth.setScale(.1f);
-            planetEarth.setRotation(-90,0,0);
+            planetEarth.setScale(scaleFactor);
             planetEarth.makeWireFrame(true);
             entities.add(planetEarth);
-            /*
-            TerrainMesh terrainMesh = new TerrainMesh(fltFileReader.hdr, fltFileReader.fltFile, 1);
-            Mesh terrainMesh1 = terrainMesh.buildMesh();
-            Entity terrainEntity = new Entity(terrainMesh1);
-            terrainEntity.setPosition(0, 0, 0);
-            terrainEntity.makeWireFrame(false);
+
+            GeoSpacialTerrainMesh geoTerrainMesh = new GeoSpacialTerrainMesh(fltFileReader.hdr, fltFileReader.fltFile, 12);
+            Mesh geoMesh = geoTerrainMesh.buildMesh();
+            Entity terrainEntity = new Entity(geoMesh);
+            terrainEntity.setScale(scaleFactor);
+            terrainEntity.makeWireFrame(true);
             entities.add(terrainEntity);
-            */
 
-            camera.setLocation(new Vector2f(fltFileReader.hdr.getLatitude(), fltFileReader.hdr.getLongitude()), terrainEntity12.getPosition().y);
-            //camera.movePosition(-54530.16f ,71099.5f ,-41461.668f);
-            //camera.movePosition(0,0,-62626); //-62626.0f
-            camera.moveRotation(90f, 0, 0);
 
-            bunnyEntity.setTerrain(mesh_12);
-            bunnyEntity.setLocation(new Vector2f (  33.437644f, -112.008944f));
+            //Vector3f cameraPos = ReferenceEllipsoid.cartesianCoordinates( fltFileReader.hdr.getLatitude(), fltFileReader.hdr.getLongitude(), 2100.000f);
+            Vector3f cameraPos = ReferenceEllipsoid.cartesianCoordinates( 34, 360 - 112, 1500.000f);
+
+            camera.moveTo(cameraPos.x * scaleFactor ,cameraPos.y * scaleFactor ,cameraPos.z * scaleFactor);
+
+            System.out.println("camera Position: "+cameraPos);
+            System.out.println("camera location: "+ ReferenceEllipsoid.geocentricCoordinates(cameraPos.x, cameraPos.y, cameraPos.z));
+
+            //camera.moveRotation(270-112f, 180+34f, 40f);
+            camera.moveRotation( 34 - 90f, 0f, 112 - 270f);
+
+            bunnyEntity.setTerrain(geoTerrainMesh);
+            bunnyEntity.setPosition(0,-100,0);
 
         }catch (Exception e){
             System.out.println(e.getMessage());
@@ -120,12 +123,14 @@ public class Logic implements ILogic {
     @Override
     public void update(float interval, Mouse mouse) {
         // Update camera position
-        camera.movePosition(cameraInc.x * CAMERA_POS_STEP,
-                cameraInc.y * CAMERA_POS_STEP * 5 ,
+        camera.moveTo(cameraInc.x * CAMERA_POS_STEP,
+                cameraInc.y * CAMERA_POS_STEP ,
                 cameraInc.z * CAMERA_POS_STEP);
         // Update camera based on mouse
         if (mouse.isRightButtonPressed()) {
             Vector2f rotVec = mouse.getDisplVec();
+            System.out.println("X: "+rotVec.x+" Y: "+rotVec.y);
+
             camera.moveRotation(rotVec.x * MOUSE_SENSITIVITY, rotVec.y * MOUSE_SENSITIVITY
                     , 0);
         }

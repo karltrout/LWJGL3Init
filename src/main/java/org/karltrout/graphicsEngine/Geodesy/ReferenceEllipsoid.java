@@ -2,10 +2,8 @@ package org.karltrout.graphicsEngine.Geodesy;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.joml.Vector3d;
 import org.joml.Vector3f;
 import org.karltrout.graphicsEngine.OBJLoader;
-import org.karltrout.graphicsEngine.models.Mesh;
 
 import java.util.ArrayList;
 
@@ -45,21 +43,46 @@ public class ReferenceEllipsoid {
 
     }
 
+    public static Vector3f geocentricCoordinates(double x, double y , double z){
 
-    public static Vector3f geocentricRectangularCoordinates(double latitude, double longitude, double height){
+        //System.out.println("X: "+x+" Y: "+y+" Z: "+z);
+        Vector3f location = new Vector3f();
+
+        double radius = Math.sqrt((Math.pow(y,2) + Math.pow(z, 2)));
+
+        double e2 = 0.00669437999014; //(eccentricitySquared)
+        double θ = 90 - Math.toDegrees(Math.acos( z / POLAR_RADIUS.doubleValue() ));
+        // β(Φ)=atan(sqrt (1 - e^2) * tan(Φ))
+        double ϕ = Math.toDegrees( Math.atan(( Math.tan(Math.toRadians(θ)) / Math.sqrt(1 - e2) )) );
+
+        double altitude = radiusOfCurvature(ϕ).doubleValue();
+
+
+        double λ = Math.toDegrees(Math.atan2( y , x ));
+
+        location.x = (float) ϕ; //latitude
+        location.y = (float) λ; //longitude
+        location.z = (float) z; //altitude; //height
+
+
+        System.out.println("ϕ : "+  ϕ + " λ: "+λ+ " R: "+radius+" H: "+z );
+
+        return location;
+    }
+
+
+    public static Vector3f cartesianCoordinates(double latitude, double longitude, double height){
         Vector3f coordinates = new Vector3f();
 
-        //if (longitude == 0) longitude = 360d;
         double latitudeRadians = Math.toRadians(latitude);
         double longitudeRadians = Math.toRadians(longitude);
 
         Number normal = radiusOfCurvature(latitude);
-        coordinates.x = (float)((normal.floatValue() + height) * Math.cos(latitudeRadians) * Math.cos(longitudeRadians));
-        coordinates.y = (float)((normal.floatValue() + height) * Math.cos(latitudeRadians) * Math.sin(longitudeRadians));
-        coordinates.z =(float)(
-                ((Math.pow(POLAR_RADIUS.doubleValue(), 2) / Math.pow(EQUATORIAL_RADIUS.doubleValue(), 2))
-                        * normal.doubleValue() + height)
-                * Math.sin(latitudeRadians));
+        coordinates.x = (float) ((normal.doubleValue() + height) * Math.cos(latitudeRadians) * Math.cos(longitudeRadians));
+        coordinates.y = (float) ((normal.doubleValue() + height) * Math.cos(latitudeRadians) * Math.sin(longitudeRadians));
+        coordinates.z = (float) (((Math.pow(POLAR_RADIUS.doubleValue(), 2) / Math.pow(EQUATORIAL_RADIUS.doubleValue(), 2))
+                                * normal.doubleValue() + height)
+                        * Math.sin(latitudeRadians));
 
         return coordinates;
     }
@@ -75,8 +98,8 @@ public class ReferenceEllipsoid {
         double radianLatitude = Math.toRadians(latitude);
         return Math.pow(EQUATORIAL_RADIUS.doubleValue(), 2)
                 / Math.sqrt(
-                        Math.pow(EQUATORIAL_RADIUS.doubleValue(), 2) * Math.pow(Math.cos(radianLatitude),2)
-                                + Math.pow(POLAR_RADIUS.doubleValue(), 2) *  Math.pow(Math.sin(radianLatitude),2)
+                        Math.pow(EQUATORIAL_RADIUS.doubleValue() * Math.cos(radianLatitude),2)
+                                + Math.pow(POLAR_RADIUS.doubleValue() * Math.sin(radianLatitude),2)
                 );
 
     }
@@ -91,15 +114,13 @@ public class ReferenceEllipsoid {
                 try {
 
                         latitudeLongitudeCloud[la][lo] =
-                                geocentricRectangularCoordinates( (la + 1) - 90, lo - 180 , 1);
+                                cartesianCoordinates( (la + 1) - 90, lo - 180 , 1);
 
                     } catch (ArrayIndexOutOfBoundsException a){
                     a.printStackTrace();
                 }
             }
         }
-
-        System.out.println("Size: "+latitudeLongitudeCloud.length);
 
         return latitudeLongitudeCloud;
     }
@@ -137,18 +158,18 @@ public class ReferenceEllipsoid {
                 faceVector[1] = String.valueOf(bl).split("/");
                 faceVector[2] = String.valueOf(tr).split("/");
                 faceList.add(faceVector);
-                System.out.println("Face cnt: "+ faceList.size()+" face 1 : "+faceVector[0][0]+", "+faceVector[1][0]+", "+faceVector[2][0]);
+                //System.out.println("Face cnt: "+ faceList.size()+" face 1 : "+faceVector[0][0]+", "+faceVector[1][0]+", "+faceVector[2][0]);
 
                 String[][] faceVector2 = new String[3][3];
                 faceVector2[0] = String.valueOf(tr).split("/");
                 faceVector2[1] = String.valueOf(bl).split("/");
                 faceVector2[2] = String.valueOf(br).split("/");
                 faceList.add(faceVector2);
-                System.out.println("Face cnt: "+ faceList.size()+" face 2 : "+faceVector2[0][0]+", "+faceVector2[1][0]+", "+faceVector2[2][0]);
+                //System.out.println("Face cnt: "+ faceList.size()+" face 2 : "+faceVector2[0][0]+", "+faceVector2[1][0]+", "+faceVector2[2][0]);
 
             }
         }
-        System.out.println("Number 0f Earth Faces "+faceList.size());
+        //System.out.println("Number 0f Earth Faces "+faceList.size());
         objLoader.setFaces(faceList);
 
         return objLoader;

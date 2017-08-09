@@ -121,8 +121,8 @@ public class FltFileReader {
                 byteorder     LSBFIRST
          */
 
-        final int ncols;
-        final int nrows;
+        public final int ncols;
+        public final int nrows;
         final float xllcorner;
         final float yllcorner;
         final Double cellsize;
