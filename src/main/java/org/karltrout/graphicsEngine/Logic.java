@@ -31,6 +31,7 @@ public class Logic implements ILogic {
     private static final float CAMERA_POS_STEP = 200.0f;
     private static final float scaleFactor = .01f;
     private int MIN_HEIGHT = 1500;
+    private int ind = 1;
 
     public Logic() throws Exception {
         camera = new Camera();
@@ -110,44 +111,63 @@ public class Logic implements ILogic {
 
     @Override
     public void input(Window window, Mouse mouse) {
+
         cameraInc.set(0, 0, 0);
+
+        if(cameraLoc.x <= -90 ){
+            cameraLoc.x = -90;
+            ind = ind * -1;
+            cameraLoc.y = (cameraLoc.y < 0 ) ? 180 + cameraLoc.y: cameraLoc.y - 180;
+        }
+        if ( cameraLoc.x >= 90){
+            cameraLoc.x = 90;
+            ind = ind * -1;
+            cameraLoc.y = (cameraLoc.y < 0 ) ? 180 + cameraLoc.y: cameraLoc.y - 180;
+        }
+
+        if (window.isKeyPressed(GLFW_KEY_W)) {
+            cameraInc.x = -1;
+
+            if ( cameraLoc.x < 90 && ind > 0){
+                cameraLoc.x += 1;
+            }
+            else{
+                cameraLoc.x -= 1;
+            }
+        }
+
+        if (window.isKeyPressed(GLFW_KEY_S)) {
+            cameraInc.x = 1;
+
+            if ( cameraLoc.x <= 90 && ind > 0){
+                cameraLoc.x -= 1;
+            }
+            else{
+               if (cameraLoc.x < 90 ) cameraLoc.x += 1;
+            }
+        }
+
         if (window.isKeyPressed(GLFW_KEY_A)) {
             cameraInc.y = 1;
             if (cameraLoc.y > 180 ){
                 cameraLoc.y = cameraLoc.y * -1;
             }
-            cameraLoc.y += 1;// (30/3600);
+            cameraLoc.y += 1;
         } else if (window.isKeyPressed(GLFW_KEY_D)) {
             cameraInc.y = 1;
             if (cameraLoc.y < -180 ){
                 cameraLoc.y = cameraLoc.y * -1;
             }
-            cameraLoc.y -= 1; // (30/3600);
+            cameraLoc.y -= 1;
         }
-        if (window.isKeyPressed(GLFW_KEY_W)) {
-            cameraInc.x = -1;
-            //longitude 0->-180
-            if(cameraLoc.x < -90 ){
-                cameraLoc.x = cameraLoc.x * -1;
-                cameraLoc.y = cameraLoc.y * -1;
-            }
-            cameraLoc.x -= 1; // (30/3600);
 
-        } else if (window.isKeyPressed(GLFW_KEY_S)) {
-            cameraInc.x = 1;
-            if ( cameraLoc.x > 90){
-                cameraLoc.x = cameraLoc.x * -1;
-                cameraLoc.y = cameraLoc.y * -1;
-            }
-            cameraLoc.x += 1; //(30/3600);
-        }
         if (window.isKeyPressed(GLFW_KEY_Z)) {
             cameraInc.z = -1;
-            cameraLoc.z -= 100; //(30/3600);
+            cameraLoc.z -= 100;
             if (cameraLoc.z < MIN_HEIGHT) cameraLoc.z = MIN_HEIGHT;
         } else if (window.isKeyPressed(GLFW_KEY_X)) {
             cameraInc.z = 1;
-            cameraLoc.z += 100;//(30/3600);
+            cameraLoc.z += 100;
         }
     }
 
