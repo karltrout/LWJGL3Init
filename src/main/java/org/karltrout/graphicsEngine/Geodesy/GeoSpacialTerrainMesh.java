@@ -76,7 +76,7 @@ public class GeoSpacialTerrainMesh extends TerrainMesh {
                  vertices.add(vector3f);
             }
             //System.out.println("Z: "+zResolution+",X: "+xResolution+" La: "+ latitudeDegrees+"="+vector3f.x+" Lo: "+longitudeDegrees+"="+vector3f.y+" h: "+fltFile.data[zResolution][xResolution]+"="+vector3f.z);
-            System.out.println(vector3f);
+            //System.out.println(vector3f);
         }
 
         objLoader.setVertices(vertices);
@@ -121,10 +121,6 @@ public class GeoSpacialTerrainMesh extends TerrainMesh {
         return objLoader.build();
     }
 
-    private float getLatitudePointLength(Number latitude){
-        Number length = getLatitudeLength(latitude);
-        return  (length.floatValue() / hdr.nrows) * resolution;
-    }
 
     public Vector3f getWorldPosition(Vector2f latlong) {
         Vector3f results = new Vector3f(0,0,0);
@@ -147,9 +143,5 @@ public class GeoSpacialTerrainMesh extends TerrainMesh {
         return ((GEO_ARC_SECOND_METER_DISTANCE  / 3.0f)* lonMultiplier.floatValue());
     }
 
-    private double getLatitudeLength(Number latitude){
-        double results =  (111132.954d - (559.822d * Math.cos( 2d * Math.toRadians(latitude.doubleValue()))) + (1.175d * Math.cos( 4d * Math.toRadians(latitude.doubleValue()) )));
-        return results;
-    }
 
 }

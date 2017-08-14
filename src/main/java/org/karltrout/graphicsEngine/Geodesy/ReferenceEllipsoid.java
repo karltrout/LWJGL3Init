@@ -65,7 +65,7 @@ public class ReferenceEllipsoid {
         location.z = (float) z; //altitude; //height
 
 
-        System.out.println("ϕ : "+  ϕ + " λ: "+λ+ " R: "+radius+" H: "+z );
+       // System.out.println("ϕ : "+  ϕ + " λ: "+λ+ " R: "+radius+" H: "+z+" A: "+altitude );
 
         return location;
     }

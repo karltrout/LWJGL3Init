@@ -24,16 +24,19 @@ public class Logic implements ILogic {
 
     private final AppRenderer renderer;
     private final Vector3f cameraInc;
+    private Vector3f cameraLoc;
     private final Camera camera;
     private ArrayList<Entity> entities = new ArrayList<>();
     private static final float MOUSE_SENSITIVITY = 0.2f;
     private static final float CAMERA_POS_STEP = 200.0f;
-    private static final float scaleFactor = 1f;
+    private static final float scaleFactor = .01f;
+    private int MIN_HEIGHT = 1500;
 
     public Logic() throws Exception {
         camera = new Camera();
         renderer = new AppRenderer(camera);
         cameraInc = new Vector3f(0, 0, 0);
+        cameraLoc = new Vector3f(0, 0, 0);;
     }
 
     @Override
@@ -77,21 +80,26 @@ public class Logic implements ILogic {
             terrainEntity.setScale(scaleFactor);
             terrainEntity.makeWireFrame(true);
             entities.add(terrainEntity);
+            bunnyEntity.setTerrain(geoTerrainMesh);
+            bunnyEntity.setPosition(0,-100,0);
 
-
-            //Vector3f cameraPos = ReferenceEllipsoid.cartesianCoordinates( fltFileReader.hdr.getLatitude(), fltFileReader.hdr.getLongitude(), 2100.000f);
-            Vector3f cameraPos = ReferenceEllipsoid.cartesianCoordinates( 34, 360 - 112, 1500.000f);
+            Vector3f cameraPos = ReferenceEllipsoid.cartesianCoordinates( fltFileReader.hdr.getLatitude(), fltFileReader.hdr.getLongitude(), 2100.000f);
+            cameraLoc = new Vector3f(fltFileReader.hdr.getLatitude(), fltFileReader.hdr.getLongitude(), 2100.000f);
 
             camera.moveTo(cameraPos.x * scaleFactor ,cameraPos.y * scaleFactor ,cameraPos.z * scaleFactor);
+
+            //camera.moveRotation(  34, 180, 90 + 112);
 
             System.out.println("camera Position: "+cameraPos);
             System.out.println("camera location: "+ ReferenceEllipsoid.geocentricCoordinates(cameraPos.x, cameraPos.y, cameraPos.z));
 
-            //camera.moveRotation(270-112f, 180+34f, 40f);
-            camera.moveRotation( 34 - 90f, 0f, 112 - 270f);
 
-            bunnyEntity.setTerrain(geoTerrainMesh);
-            bunnyEntity.setPosition(0,-100,0);
+            /*float dirX = (float) Math.toDegrees(camera.getPosition().angle(new Vector3f( 1,0,0)));
+            float dirY = (float) Math.toDegrees(camera.getPosition().angle(new Vector3f( 0,1,0)));
+            float dirZ = (float) Math.toDegrees(camera.getPosition().angle(new Vector3f( 0,0,1)));
+            System.out.println("DIR X: "+dirX+" DIR Y: "+dirY+" DIR Z: "+dirZ);
+            */
+
 
         }catch (Exception e){
             System.out.println(e.getMessage());
@@ -103,33 +111,65 @@ public class Logic implements ILogic {
     @Override
     public void input(Window window, Mouse mouse) {
         cameraInc.set(0, 0, 0);
-        if (window.isKeyPressed(GLFW_KEY_W)) {
-            cameraInc.z = -1;
-        } else if (window.isKeyPressed(GLFW_KEY_S)) {
-            cameraInc.z = 1;
-        }
         if (window.isKeyPressed(GLFW_KEY_A)) {
-            cameraInc.x = -1;
+            cameraInc.y = 1;
+            if (cameraLoc.y > 180 ){
+                cameraLoc.y = cameraLoc.y * -1;
+            }
+            cameraLoc.y += 1;// (30/3600);
         } else if (window.isKeyPressed(GLFW_KEY_D)) {
+            cameraInc.y = 1;
+            if (cameraLoc.y < -180 ){
+                cameraLoc.y = cameraLoc.y * -1;
+            }
+            cameraLoc.y -= 1; // (30/3600);
+        }
+        if (window.isKeyPressed(GLFW_KEY_W)) {
+            cameraInc.x = -1;
+            //longitude 0->-180
+            if(cameraLoc.x < -90 ){
+                cameraLoc.x = cameraLoc.x * -1;
+                cameraLoc.y = cameraLoc.y * -1;
+            }
+            cameraLoc.x -= 1; // (30/3600);
+
+        } else if (window.isKeyPressed(GLFW_KEY_S)) {
             cameraInc.x = 1;
+            if ( cameraLoc.x > 90){
+                cameraLoc.x = cameraLoc.x * -1;
+                cameraLoc.y = cameraLoc.y * -1;
+            }
+            cameraLoc.x += 1; //(30/3600);
         }
         if (window.isKeyPressed(GLFW_KEY_Z)) {
-            cameraInc.y = -1;
+            cameraInc.z = -1;
+            cameraLoc.z -= 100; //(30/3600);
+            if (cameraLoc.z < MIN_HEIGHT) cameraLoc.z = MIN_HEIGHT;
         } else if (window.isKeyPressed(GLFW_KEY_X)) {
-            cameraInc.y = 1;
+            cameraInc.z = 1;
+            cameraLoc.z += 100;//(30/3600);
         }
     }
 
     @Override
     public void update(float interval, Mouse mouse) {
         // Update camera position
-        camera.moveTo(cameraInc.x * CAMERA_POS_STEP,
+        if (cameraInc.length() > 0) {
+
+
+            System.out.println("location: lat:"+cameraLoc.x+" lon:"+cameraLoc.y+" alt:"+ cameraLoc.z);
+            Vector3f p = ReferenceEllipsoid.cartesianCoordinates(cameraLoc.x, cameraLoc.y,  cameraLoc.z);
+            camera.moveToLocation(p.x * scaleFactor , p.y * scaleFactor , p.z * scaleFactor );
+            cameraInc.set(0, 0, 0);
+        }
+        /*camera.moveTo(cameraInc.x * CAMERA_POS_STEP,
                 cameraInc.y * CAMERA_POS_STEP ,
                 cameraInc.z * CAMERA_POS_STEP);
+                */
         // Update camera based on mouse
         if (mouse.isRightButtonPressed()) {
             Vector2f rotVec = mouse.getDisplVec();
-            System.out.println("X: "+rotVec.x+" Y: "+rotVec.y);
+            //System.out.println("X: "+rotVec.x+" Y: "+rotVec.y);
 
             camera.moveRotation(rotVec.x * MOUSE_SENSITIVITY, rotVec.y * MOUSE_SENSITIVITY
                     , 0);

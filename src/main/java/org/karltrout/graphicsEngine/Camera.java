@@ -4,6 +4,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
+import org.karltrout.graphicsEngine.Geodesy.ReferenceEllipsoid;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
@@ -30,7 +31,7 @@ public class Camera implements ICamera {
 
     @Override
     public Vector3f getLocation() {
-        return location.worldPosition;
+        return ReferenceEllipsoid.geocentricCoordinates(position.x, position.y, position.z);
     }
 
     public Vector3f getPosition() {
@@ -43,11 +44,40 @@ public class Camera implements ICamera {
         position.z = z;
     }
 
+    public void moveToLocation (float x, float y, float z) {
+
+        position.x = x;
+        position.y = y;
+        position.z = z;
+        /*
+        if (z != 0) {
+            position.x = (float) Math.sin(Math.toRadians(rotation.y)) * -1.0f * z;
+            position.z = (float) Math.cos(Math.toRadians(rotation.y)) * z;
+        }
+        if (x != 0) {
+            position.x = (float) Math.sin(Math.toRadians(rotation.y - 90)) * -1.0f * x;
+            position.z = (float) Math.cos(Math.toRadians(rotation.y - 90)) * x;
+        }
+        position.y = y;
+        */
+        if (x != 0 || z != 0) {
+            this.location.updatePosition(position.x, position.z);
+            // System.out.println(this.location);
+
+        }
+    }
+
     @Override
     public void moveTo(float offsetX, float offsetY, float offsetZ) {
 
-        position.x += offsetX;
-        position.z += offsetZ;
+        if ( offsetZ != 0 ) {
+            position.x += (float)Math.sin(Math.toRadians(rotation.y)) * -1.0f * offsetZ;
+            position.z += (float)Math.cos(Math.toRadians(rotation.y)) * offsetZ;
+        }
+        if ( offsetX != 0) {
+            position.x += (float)Math.sin(Math.toRadians(rotation.y - 90)) * -1.0f * offsetX;
+            position.z += (float)Math.cos(Math.toRadians(rotation.y - 90)) * offsetX;
+        }
         position.y += offsetY;
 
         if(offsetX != 0 || offsetZ != 0){
@@ -83,4 +113,5 @@ public class Camera implements ICamera {
         rotation.y += offsetY;
         rotation.z += offsetZ;
     }
+
 }
