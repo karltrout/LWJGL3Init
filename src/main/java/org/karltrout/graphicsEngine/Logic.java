@@ -2,12 +2,14 @@ package org.karltrout.graphicsEngine;
 
 import org.joml.Vector2f;
 import org.joml.Vector3f;
+import org.joml.Vector3fc;
 import org.karltrout.graphicsEngine.Geodesy.GeoSpacialTerrainMesh;
 import org.karltrout.graphicsEngine.Geodesy.ReferenceEllipsoid;
 import org.karltrout.graphicsEngine.models.Entity;
 import org.karltrout.graphicsEngine.models.Mesh;
 import org.karltrout.graphicsEngine.renderers.AppRenderer;
 import org.karltrout.graphicsEngine.terrains.fltFile.FltFileReader;
+import org.karltrout.graphicsEngine.terrains.fltFile.TerrainMesh;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -32,6 +34,8 @@ public class Logic implements ILogic {
     private static final float scaleFactor = .01f;
     private int MIN_HEIGHT = 1500;
     private int ind = 1;
+    private double KILOMETERS_PER_LATITUDE_DEGREE =110.5742727d;
+    private float SPEED_KPH = 1000 /60 /60f; // ~.27 km  per seconds...
 
     public Logic() throws Exception {
         camera = new Camera();
@@ -61,13 +65,6 @@ public class Logic implements ILogic {
         try {
             FltFileReader fltFileReader = FltFileReader.loadFltFile(pathToFltFile, pathToFltHdr);
 
-            /*TerrainMesh mesh_12 = new TerrainMesh(fltFileReader.hdr, fltFileReader.fltFile, 12);
-            Mesh terrainMesh12 = mesh_12.buildMesh();
-            Entity terrainEntity12 = new Entity(terrainMesh12);
-            terrainEntity12.setPosition(0, 0, 0);
-            terrainEntity12.makeWireFrame(true);
-            entities.add(terrainEntity12);
-            */
             Mesh elipsoid =  ReferenceEllipsoid.referenceElipsoidMesh().build();
 
             Entity planetEarth = new Entity(elipsoid);
@@ -81,26 +78,19 @@ public class Logic implements ILogic {
             terrainEntity.setScale(scaleFactor);
             terrainEntity.makeWireFrame(true);
             entities.add(terrainEntity);
+
+
             bunnyEntity.setTerrain(geoTerrainMesh);
             bunnyEntity.setPosition(0,-100,0);
 
-            Vector3f cameraPos = ReferenceEllipsoid.cartesianCoordinates( fltFileReader.hdr.getLatitude(), fltFileReader.hdr.getLongitude(), 2100.000f);
-            cameraLoc = new Vector3f(fltFileReader.hdr.getLatitude(), fltFileReader.hdr.getLongitude(), 2100.000f);
-
+            cameraLoc = new Vector3f(fltFileReader.hdr.getLatitude(), fltFileReader.hdr.getLongitude(), 5000.000f);
+            Vector3f cameraPos = ReferenceEllipsoid.cartesianCoordinates( cameraLoc.x, cameraLoc.y, cameraLoc.z);
             camera.moveTo(cameraPos.x * scaleFactor ,cameraPos.y * scaleFactor ,cameraPos.z * scaleFactor);
 
-            //camera.moveRotation(  34, 180, 90 + 112);
+            camera.moveRotation(  15 + (-1 * cameraLoc.x), 0,   90 + (-1 * cameraLoc.y) );
 
             System.out.println("camera Position: "+cameraPos);
             System.out.println("camera location: "+ ReferenceEllipsoid.geocentricCoordinates(cameraPos.x, cameraPos.y, cameraPos.z));
-
-
-            /*float dirX = (float) Math.toDegrees(camera.getPosition().angle(new Vector3f( 1,0,0)));
-            float dirY = (float) Math.toDegrees(camera.getPosition().angle(new Vector3f( 0,1,0)));
-            float dirZ = (float) Math.toDegrees(camera.getPosition().angle(new Vector3f( 0,0,1)));
-            System.out.println("DIR X: "+dirX+" DIR Y: "+dirY+" DIR Z: "+dirZ);
-            */
-
 
         }catch (Exception e){
             System.out.println(e.getMessage());
@@ -112,61 +102,55 @@ public class Logic implements ILogic {
     @Override
     public void input(Window window, Mouse mouse) {
 
-        cameraInc.set(0, 0, 0);
-
-        if(cameraLoc.x <= -90 ){
-            cameraLoc.x = -90;
+        float travel = (float) (SPEED_KPH /KILOMETERS_PER_LATITUDE_DEGREE);
+        if(cameraLoc.x <= -90 || cameraLoc.x >= 90 ){
+            cameraLoc.x =  cameraLoc.x < 0 ? -90 : 90;
             ind = ind * -1;
             cameraLoc.y = (cameraLoc.y < 0 ) ? 180 + cameraLoc.y: cameraLoc.y - 180;
-        }
-        if ( cameraLoc.x >= 90){
-            cameraLoc.x = 90;
-            ind = ind * -1;
-            cameraLoc.y = (cameraLoc.y < 0 ) ? 180 + cameraLoc.y: cameraLoc.y - 180;
-        }
-
-        if (window.isKeyPressed(GLFW_KEY_W)) {
-            cameraInc.x = -1;
-
-            if ( cameraLoc.x < 90 && ind > 0){
-                cameraLoc.x += 1;
-            }
-            else{
-                cameraLoc.x -= 1;
-            }
         }
 
         if (window.isKeyPressed(GLFW_KEY_S)) {
-            cameraInc.x = 1;
+            cameraInc.x -=  travel;
 
-            if ( cameraLoc.x <= 90 && ind > 0){
-                cameraLoc.x -= 1;
+            if ( cameraLoc.x < 90 && ind > 0){
+                cameraLoc.x +=  travel;
             }
             else{
-               if (cameraLoc.x < 90 ) cameraLoc.x += 1;
+                cameraLoc.x -= travel;
+            }
+        }
+
+        if (window.isKeyPressed(GLFW_KEY_W)) {
+            cameraInc.x += travel;
+
+            if ( cameraLoc.x <= 90 && ind > 0){
+                cameraLoc.x -= travel;
+            }
+            else{
+               if (cameraLoc.x < 90 ) cameraLoc.x += travel;
             }
         }
 
         if (window.isKeyPressed(GLFW_KEY_A)) {
-            cameraInc.y = 1;
+            cameraInc.y += travel;
             if (cameraLoc.y > 180 ){
-                cameraLoc.y = cameraLoc.y * -1;
+                cameraLoc.y *= -1;
             }
-            cameraLoc.y += 1;
+            cameraLoc.y += travel;
         } else if (window.isKeyPressed(GLFW_KEY_D)) {
-            cameraInc.y = 1;
+            cameraInc.y -= travel;
             if (cameraLoc.y < -180 ){
-                cameraLoc.y = cameraLoc.y * -1;
+                cameraLoc.y *= -1;
             }
-            cameraLoc.y -= 1;
+            cameraLoc.y -= travel;
         }
 
         if (window.isKeyPressed(GLFW_KEY_Z)) {
-            cameraInc.z = -1;
+            cameraInc.z += -1;
             cameraLoc.z -= 100;
             if (cameraLoc.z < MIN_HEIGHT) cameraLoc.z = MIN_HEIGHT;
         } else if (window.isKeyPressed(GLFW_KEY_X)) {
-            cameraInc.z = 1;
+            cameraInc.z += 1;
             cameraLoc.z += 100;
         }
     }
@@ -176,24 +160,19 @@ public class Logic implements ILogic {
         // Update camera position
         if (cameraInc.length() > 0) {
 
-
-            System.out.println("location: lat:"+cameraLoc.x+" lon:"+cameraLoc.y+" alt:"+ cameraLoc.z);
             Vector3f p = ReferenceEllipsoid.cartesianCoordinates(cameraLoc.x, cameraLoc.y,  cameraLoc.z);
-            camera.moveToLocation(p.x * scaleFactor , p.y * scaleFactor , p.z * scaleFactor );
+            camera.moveToLocation(p.x * scaleFactor , p.y  * scaleFactor , p.z  * scaleFactor );
+            camera.moveRotation(cameraInc.x  , 0, cameraInc.y * -1);
+
             cameraInc.set(0, 0, 0);
         }
-        /*camera.moveTo(cameraInc.x * CAMERA_POS_STEP,
-                cameraInc.y * CAMERA_POS_STEP ,
-                cameraInc.z * CAMERA_POS_STEP);
-                */
         // Update camera based on mouse
         if (mouse.isRightButtonPressed()) {
             Vector2f rotVec = mouse.getDisplVec();
-            //System.out.println("X: "+rotVec.x+" Y: "+rotVec.y);
-
             camera.moveRotation(rotVec.x * MOUSE_SENSITIVITY, rotVec.y * MOUSE_SENSITIVITY
                     , 0);
         }
+
     }
 
     @Override
