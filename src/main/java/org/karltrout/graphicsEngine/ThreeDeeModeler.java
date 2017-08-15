@@ -89,6 +89,7 @@ public class ThreeDeeModeler implements Runnable {
             elapsedTime = timer.getElapsedTime();
             accumulator += elapsedTime;
 
+            // Use elapse time here in input for timed events. multiply it by millisecods aginst speed
             input();
 
             while (accumulator >= interval) {
