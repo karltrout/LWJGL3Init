@@ -56,7 +56,7 @@ public class Logic implements ILogic {
         bunnyEntity.setScale(1000.5f);
         bunnyEntity.setPosition(0.0f,2000.20f,-.50f);
         bunnyEntity.makeWireFrame(true);
-        entities.add(bunnyEntity);
+        //entities.add(bunnyEntity);
 
         //Add Terrain data to OPEN GL
         Path pathToFltHdr = Paths.get("resources/models/terrainModels/floatn34w112_13.hdr");
@@ -81,9 +81,10 @@ public class Logic implements ILogic {
 
 
             bunnyEntity.setTerrain(geoTerrainMesh);
-            bunnyEntity.setPosition(0,-100,0);
+            bunnyEntity.setPosition(0,0,0);
 
-            cameraLoc = new Vector3f(fltFileReader.hdr.getLatitude(), fltFileReader.hdr.getLongitude(), 5000.000f);
+            cameraLoc = new Vector3f(fltFileReader.hdr.getLatitude(), fltFileReader.hdr.getLongitude(), 50000.000f);
+            //cameraLoc = new Vector3f(0,0, 1500.000f);
             Vector3f cameraPos = ReferenceEllipsoid.cartesianCoordinates( cameraLoc.x, cameraLoc.y, cameraLoc.z);
             camera.moveTo(cameraPos.x * scaleFactor ,cameraPos.y * scaleFactor ,cameraPos.z * scaleFactor);
 
@@ -188,6 +189,13 @@ public class Logic implements ILogic {
     }
     @Override
     public void cleanUp(){
+
         renderer.cleanUp();
+
+        for (Entity entity :
+                entities) {
+            entity.getMesh().cleanUp();
+
+        }
     }
 }

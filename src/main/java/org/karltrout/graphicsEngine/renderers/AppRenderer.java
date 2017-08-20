@@ -21,7 +21,7 @@ public class AppRenderer {
 
     private static final float FOV = (float) Math.toRadians(60);
     private static final float NEAR_PLANE = .5f;
-    private static final float FAR_PLANE = 12000000.0f;
+    private static final float FAR_PLANE = 1200000.0f;
 
     //SKY COLOR  = 83.1, 94.5, 97.3
     private static float RED = 0.0f;
@@ -43,6 +43,8 @@ public class AppRenderer {
         Matrix4f projectionMatrix =
                 transformation.getProjectionMatrix(FOV, window.getWidth(), window.getHeight(), NEAR_PLANE, FAR_PLANE);
         appShader.setUniform("projectionMatrix", projectionMatrix);
+
+//        appShader.setUniform("texture_sampler", 0);
 
         // Update view Matrix
         Matrix4f viewMatrix = transformation.getViewMatrix(camera);
@@ -96,6 +98,7 @@ public class AppRenderer {
         //appShader.createUniform("worldMatrix");
         appShader.createUniform("projectionMatrix");
         appShader.createUniform("modelViewMatrix");
+       // appShader.createUniform("texture_sampler");
 
     }
 }

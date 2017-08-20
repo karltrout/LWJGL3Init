@@ -3,6 +3,7 @@ package org.karltrout.graphicsEngine;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.karltrout.graphicsEngine.models.Mesh;
+import org.karltrout.graphicsEngine.textures.TextureData;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -29,6 +30,7 @@ public class OBJLoader {
 
     String line = null;
     FileReader reader = null;
+    private TextureData texture;
 
     public OBJLoader(){
     }
@@ -126,7 +128,12 @@ public class OBJLoader {
             indiciesArray[i] = indices.get(i);
         }
 
-        return new Mesh(verticiesArray, textureArray, indiciesArray);
+        Mesh mesh = new Mesh(verticiesArray, textureArray, indiciesArray);
+
+        if(this.texture != null)
+            mesh.setTexture(this.texture);
+
+        return mesh;
 
     }
 
@@ -163,4 +170,13 @@ public class OBJLoader {
 
         }
     }
+
+    public void setTextureArray(List<Vector2f> textureList){
+        this.textures = textureList;
+    }
+
+    public void setTexture(TextureData texture) {
+        this.texture = texture;
+    }
+
 }

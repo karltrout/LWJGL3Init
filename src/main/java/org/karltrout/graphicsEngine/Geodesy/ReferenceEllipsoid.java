@@ -1,11 +1,24 @@
 package org.karltrout.graphicsEngine.Geodesy;
 
+import de.matthiasmann.twl.utils.PNGDecoder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.karltrout.graphicsEngine.OBJLoader;
+import org.karltrout.graphicsEngine.OpenGLLoader;
+import org.karltrout.graphicsEngine.textures.TextureData;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.List;
+
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL30.glGenerateMipmap;
 
 /**
  * Package to contain Reference Ellipsoid methods and Static calculations based on the Ellipsoid.
@@ -129,6 +142,25 @@ public class ReferenceEllipsoid {
 
         objLoader = new OBJLoader();
         Vector3f[][] latitudes = pointCloud();
+
+        TextureData textureData = OpenGLLoader.decodeTextureFile("src/resources/world.topo.bathy.200412.3x21600x10800.png");
+
+        //float[] textures = new float[180*360];
+        ArrayList<Vector2f> textures = new ArrayList<>();
+        for (int i = 0; i < 180; i++) {
+            for (int j = 0; j < 360; j++) {
+                float x = ((float) j + 1 / (float) textureData.getWidth());
+                float y = ((float) i + 1 / (float) textureData.getHeight());
+                textures.add(new Vector2f(x, y));
+            }
+        }
+
+        System.out.println("Tex Height: "+textureData.getHeight()+" Width: "+textureData.getWidth()+" Id: "+textureData.getId());
+
+        //objLoader.setTextureArray(textures);
+
+        //objLoader.setTexture(textureData);
+
         ArrayList<Vector3f> pointsList = new ArrayList<>();
 
         for (int la = 0; la < latitudes.length ; la++) {
@@ -154,16 +186,22 @@ public class ReferenceEllipsoid {
                 int br = (x + 1) * numberOfLongitude + z + 1; // bottom-right
 
                 String[][] faceVector = new String[3][3];
-                faceVector[0] = String.valueOf(tl).split("/");
-                faceVector[1] = String.valueOf(bl).split("/");
-                faceVector[2] = String.valueOf(tr).split("/");
+                faceVector[0][0] = String.valueOf(tl);
+                faceVector[0][1] = String.valueOf(tl);
+                faceVector[1][0] = String.valueOf(bl);
+                faceVector[1][1] = String.valueOf(bl);
+                faceVector[2][0] = String.valueOf(tr);
+                faceVector[2][1] = String.valueOf(tr);
                 faceList.add(faceVector);
                 //System.out.println("Face cnt: "+ faceList.size()+" face 1 : "+faceVector[0][0]+", "+faceVector[1][0]+", "+faceVector[2][0]);
 
                 String[][] faceVector2 = new String[3][3];
-                faceVector2[0] = String.valueOf(tr).split("/");
-                faceVector2[1] = String.valueOf(bl).split("/");
-                faceVector2[2] = String.valueOf(br).split("/");
+                faceVector2[0][0] = String.valueOf(tr);
+                faceVector2[0][1] = String.valueOf(tr);
+                faceVector2[1][0] = String.valueOf(bl);
+                faceVector2[1][1] = String.valueOf(bl);
+                faceVector2[2][0] = String.valueOf(br);
+                faceVector2[2][1] = String.valueOf(br);
                 faceList.add(faceVector2);
                 //System.out.println("Face cnt: "+ faceList.size()+" face 2 : "+faceVector2[0][0]+", "+faceVector2[1][0]+", "+faceVector2[2][0]);
 

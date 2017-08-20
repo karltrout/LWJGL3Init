@@ -191,7 +191,7 @@ public class OpenGLLoader {
 
     }
 
-	private TextureData decodeTextureFile(String fileName){
+	public static TextureData decodeTextureFile(String fileName){
 	    int width = 0;
 	    int height = 0;
         ByteBuffer buffer = null;

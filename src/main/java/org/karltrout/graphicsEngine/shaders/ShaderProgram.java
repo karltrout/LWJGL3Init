@@ -104,6 +104,10 @@ public abstract class ShaderProgram {
 
     }
 
+	public void setUniform(String uniformName, int value) {
+		glUniform1i(uniforms.get(uniformName), value);
+	}
+
 	protected void loadFloat(int location, float value){
 	    glUniform1f(location, value);
     }
