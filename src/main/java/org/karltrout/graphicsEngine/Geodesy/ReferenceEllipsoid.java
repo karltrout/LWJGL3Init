@@ -143,23 +143,23 @@ public class ReferenceEllipsoid {
         objLoader = new OBJLoader();
         Vector3f[][] latitudes = pointCloud();
 
-        TextureData textureData = OpenGLLoader.decodeTextureFile("src/resources/world.topo.bathy.200412.3x21600x10800.png");
+        TextureData textureData = OpenGLLoader.decodeTextureFile("src/resources/worldtopobathy2004013x2.png"); //"src/resources/world.topo.bathy.200412.3x21600x10800.png");
 
         //float[] textures = new float[180*360];
-        ArrayList<Vector2f> textures = new ArrayList<>();
+        ArrayList<Vector2f> textureIndices = new ArrayList<>();
         for (int i = 0; i < 180; i++) {
-            for (int j = 0; j < 360; j++) {
-                float x = ((float) j + 1 / (float) textureData.getWidth());
-                float y = ((float) i + 1 / (float) textureData.getHeight());
-                textures.add(new Vector2f(x, y));
+
+            float y = (i == 0 )? (float)i : (i / 360f);
+            for (int j = 360; j > -1; j--) {
+                float x = j / 360f;
+                textureIndices.add(new Vector2f(x, y));
             }
         }
 
         System.out.println("Tex Height: "+textureData.getHeight()+" Width: "+textureData.getWidth()+" Id: "+textureData.getId());
 
-        //objLoader.setTextureArray(textures);
-
-        //objLoader.setTexture(textureData);
+        objLoader.setTextureArray(textureIndices);
+        objLoader.setTexture(textureData);
 
         ArrayList<Vector3f> pointsList = new ArrayList<>();
 

@@ -1,11 +1,7 @@
 package org.karltrout.graphicsEngine.textures;
 
-import de.matthiasmann.twl.utils.PNGDecoder;
 import org.joml.Vector2f;
-import org.karltrout.graphicsEngine.Geodesy.ReferenceEllipsoid;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
@@ -32,10 +28,14 @@ public class TextureData {
         // Bind the texture
         glBindTexture(GL_TEXTURE_2D, textureId);
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width,
                 height, 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
 
-        glGenerateMipmap(GL_TEXTURE_2D);
+        System.out.println("Texture Binding Complete.");
 
     }
 

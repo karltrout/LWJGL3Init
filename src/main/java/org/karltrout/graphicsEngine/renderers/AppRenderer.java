@@ -43,8 +43,7 @@ public class AppRenderer {
         Matrix4f projectionMatrix =
                 transformation.getProjectionMatrix(FOV, window.getWidth(), window.getHeight(), NEAR_PLANE, FAR_PLANE);
         appShader.setUniform("projectionMatrix", projectionMatrix);
-
-//        appShader.setUniform("texture_sampler", 0);
+        appShader.setUniform("texture_sampler", 0);
 
         // Update view Matrix
         Matrix4f viewMatrix = transformation.getViewMatrix(camera);
@@ -52,9 +51,9 @@ public class AppRenderer {
         // Render each gameItem
         for(Entity entity : entities) {
 
-            //glEnable(GL_CULL_FACE);
-            //glCullFace(GL_FRONT);
-            glDisable(GL_DEPTH_TEST);
+            glEnable(GL_CULL_FACE);
+            glCullFace(GL_BACK);
+            //glDisable(GL_DEPTH_TEST);
             int polyMode = glGetInteger(GL_POLYGON_MODE);
             if (entity.isWireMesh()){
                 glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
@@ -98,7 +97,7 @@ public class AppRenderer {
         //appShader.createUniform("worldMatrix");
         appShader.createUniform("projectionMatrix");
         appShader.createUniform("modelViewMatrix");
-       // appShader.createUniform("texture_sampler");
+        appShader.createUniform("texture_sampler");
 
     }
 }

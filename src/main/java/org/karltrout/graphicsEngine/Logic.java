@@ -35,7 +35,7 @@ public class Logic implements ILogic {
     private int MIN_HEIGHT = 1500;
     private int ind = 1;
     private double KILOMETERS_PER_LATITUDE_DEGREE =110.5742727d;
-    private float SPEED_KPH = 1000 /60 /60f; // ~.27 km  per seconds...
+    private float SPEED_KPH = 100000 /60 /60f; // ~.27 km  per seconds...
 
     public Logic() throws Exception {
         camera = new Camera();
@@ -51,12 +51,12 @@ public class Logic implements ILogic {
 
         //Add Our Entities to OpenGL Memory
         OBJLoader objLoader = new OBJLoader();
-        Mesh bunny = objLoader.loadObjModel("bunny");
+       /* Mesh bunny = objLoader.loadObjModel("bunny");
         Entity bunnyEntity = new Entity(bunny);
-        bunnyEntity.setScale(1000.5f);
-        bunnyEntity.setPosition(0.0f,2000.20f,-.50f);
+        bunnyEntity.setScale(100.5f);
+        bunnyEntity.setPosition(0.0f,00.00f,1.50f);
         bunnyEntity.makeWireFrame(true);
-        //entities.add(bunnyEntity);
+        entities.add(bunnyEntity);*/
 
         //Add Terrain data to OPEN GL
         Path pathToFltHdr = Paths.get("resources/models/terrainModels/floatn34w112_13.hdr");
@@ -69,24 +69,25 @@ public class Logic implements ILogic {
 
             Entity planetEarth = new Entity(elipsoid);
             planetEarth.setScale(scaleFactor);
-            planetEarth.makeWireFrame(true);
+            planetEarth.makeWireFrame(false);
             entities.add(planetEarth);
 
-            GeoSpacialTerrainMesh geoTerrainMesh = new GeoSpacialTerrainMesh(fltFileReader.hdr, fltFileReader.fltFile, 12);
+          /*  GeoSpacialTerrainMesh geoTerrainMesh = new GeoSpacialTerrainMesh(fltFileReader.hdr, fltFileReader.fltFile, 12);
             Mesh geoMesh = geoTerrainMesh.buildMesh();
             Entity terrainEntity = new Entity(geoMesh);
             terrainEntity.setScale(scaleFactor);
             terrainEntity.makeWireFrame(true);
-            entities.add(terrainEntity);
+            //entities.add(terrainEntity);
+*/
 
+           // bunnyEntity.setTerrain(geoTerrainMesh);
+          //  bunnyEntity.setPosition(0,0,0);
 
-            bunnyEntity.setTerrain(geoTerrainMesh);
-            bunnyEntity.setPosition(0,0,0);
-
-            cameraLoc = new Vector3f(fltFileReader.hdr.getLatitude(), fltFileReader.hdr.getLongitude(), 50000.000f);
-            //cameraLoc = new Vector3f(0,0, 1500.000f);
+            cameraLoc = new Vector3f(fltFileReader.hdr.getLatitude(), fltFileReader.hdr.getLongitude(), 500000.000f);
+            //cameraLoc = new Vector3f(0,0, 0.000f);
             Vector3f cameraPos = ReferenceEllipsoid.cartesianCoordinates( cameraLoc.x, cameraLoc.y, cameraLoc.z);
             camera.moveTo(cameraPos.x * scaleFactor ,cameraPos.y * scaleFactor ,cameraPos.z * scaleFactor);
+            //camera.moveTo(0 ,0,0);
 
             camera.moveRotation(  15 + (-1 * cameraLoc.x), 0,   90 + (-1 * cameraLoc.y) );
 
@@ -147,12 +148,12 @@ public class Logic implements ILogic {
         }
 
         if (window.isKeyPressed(GLFW_KEY_Z)) {
-            cameraInc.z += -1;
-            cameraLoc.z -= 100;
+            cameraInc.z -= 100000;
+            cameraLoc.z -= 100000;
             if (cameraLoc.z < MIN_HEIGHT) cameraLoc.z = MIN_HEIGHT;
         } else if (window.isKeyPressed(GLFW_KEY_X)) {
-            cameraInc.z += 1;
-            cameraLoc.z += 100;
+            cameraInc.z += 100000;
+            cameraLoc.z += 100000;
         }
     }
 

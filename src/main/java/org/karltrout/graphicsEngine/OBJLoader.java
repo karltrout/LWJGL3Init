@@ -128,10 +128,15 @@ public class OBJLoader {
             indiciesArray[i] = indices.get(i);
         }
 
-        Mesh mesh = new Mesh(verticiesArray, textureArray, indiciesArray);
-
-        if(this.texture != null)
+        Mesh mesh;
+        if (this.textures.size() > 0) {
+            System.out.println("textureArray cnt: "+textureArray.length);
+            mesh = new Mesh(verticiesArray, null, textureArray, indiciesArray);
             mesh.setTexture(this.texture);
+        }
+        else {
+            mesh = new Mesh(verticiesArray, textureArray, null, indiciesArray);
+        }
 
         return mesh;
 
@@ -148,12 +153,12 @@ public class OBJLoader {
         indecies.add(currentVertexPointer);
 
         if (textures.size() > 0) {
-            Vector2f currentTex = textures.get(Integer.parseInt(vertexData[1]) - 1);
+            Vector2f currentTex = textures.get(Integer.parseInt(vertexData[1]) -1);
             textureArray[currentVertexPointer * 2] = currentTex.x;
-            textureArray[currentVertexPointer * 2 + 1] = 1 - currentTex.y;
+            textureArray[currentVertexPointer * 2 + 1] =  currentTex.y;
         }
         else{
-            textureArray[(currentVertexPointer) * 2] =1;
+            textureArray[(currentVertexPointer) * 2] = 1;
             textureArray[(currentVertexPointer) * 2 + 1] = 1;
 
         }
