@@ -5,10 +5,12 @@ import org.apache.logging.log4j.Logger;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.karltrout.graphicsEngine.OBJLoader;
+import org.karltrout.graphicsEngine.OpenGLLoader;
 import org.karltrout.graphicsEngine.models.Mesh;
 import org.karltrout.graphicsEngine.terrains.fltFile.FltFile;
 import org.karltrout.graphicsEngine.terrains.fltFile.FltFileReader;
 import org.karltrout.graphicsEngine.terrains.fltFile.TerrainMesh;
+import org.karltrout.graphicsEngine.textures.TextureData;
 
 import java.util.ArrayList;
 
@@ -39,6 +41,29 @@ public class GeoSpacialTerrainMesh extends TerrainMesh {
         this.objLoader = new OBJLoader();
         this.hdr = hdr;
         this.resolution = (resolution > MIN_RESOLUTION ) ? MIN_RESOLUTION: resolution;
+
+        /*
+        Texture information
+         */
+        String planetImg = "src/resources/34w112.png";
+        TextureData textureData = OpenGLLoader.decodeTextureFile(planetImg);
+
+        ArrayList<Vector2f> textureIndices = new ArrayList<>();
+        for (int i = 0; i <= GRID_SIZE; i++) {
+
+            float y = (i == 0)? i : ((i * resolution) / hdr.nrows);
+            for (int j = 0; j <=  GRID_SIZE; j++) {
+                float x = (j == 0) ? j : (j * resolution / hdr.ncols);
+                textureIndices.add(new Vector2f(x, y));
+            }
+        }
+        System.out.println(" 34w112 texture point array Size: "+textureIndices.size());
+        objLoader.setTextureArray(textureIndices);
+        objLoader.setTexture(textureData);
+
+
+        /* Done with Texture */
+
 
         float[] root = {0,0};
        //            this.getTexCoords().addAll(root);
@@ -94,17 +119,23 @@ public class GeoSpacialTerrainMesh extends TerrainMesh {
                     int tr = (x + 1) * rowlength + z; // top-right
                     int br = (x + 1) * rowlength + z + 1; // bottom-right
 
-                    String[][] faceVector = new String[3][3];
-                    faceVector[0] = String.valueOf(tl).split("/");
-                    faceVector[1] = String.valueOf(bl).split("/");
-                    faceVector[2] = String.valueOf(tr).split("/");
-                    faceList.add(faceVector);
+                String[][] faceVector = new String[3][3];
+                faceVector[0][0] = String.valueOf(tl);
+                faceVector[0][1] = String.valueOf(tl);
+                faceVector[1][0] = String.valueOf(bl);
+                faceVector[1][1] = String.valueOf(bl);
+                faceVector[2][0] = String.valueOf(tr);
+                faceVector[2][1] = String.valueOf(tr);
+                faceList.add(faceVector);
 
-                    String[][] faceVector2 = new String[3][3];
-                    faceVector2[0] = String.valueOf(tr).split("/");
-                    faceVector2[1] = String.valueOf(bl).split("/");
-                    faceVector2[2] = String.valueOf(br).split("/");
-                    faceList.add(faceVector2);
+                String[][] faceVector2 = new String[3][3];
+                faceVector2[0][0] = String.valueOf(tr);
+                faceVector2[0][1] = String.valueOf(tr);
+                faceVector2[1][0] = String.valueOf(bl);
+                faceVector2[1][1] = String.valueOf(bl);
+                faceVector2[2][0] = String.valueOf(br);
+                faceVector2[2][1] = String.valueOf(br);
+                faceList.add(faceVector2);
 
             }
         }

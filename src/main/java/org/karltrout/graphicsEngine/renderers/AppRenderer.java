@@ -2,11 +2,15 @@ package org.karltrout.graphicsEngine.renderers;
 
 import org.joml.Matrix4f;
 import org.karltrout.graphicsEngine.Camera;
+import org.karltrout.graphicsEngine.Geodesy.ReferenceEllipsoid;
 import org.karltrout.graphicsEngine.Window;
 import org.karltrout.graphicsEngine.models.Entity;
 import org.karltrout.graphicsEngine.shaders.DefaultShader;
 import org.lwjgl.opengl.GL11;
 
+import static java.lang.Math.PI;
+import static java.lang.Math.cos;
+import static java.lang.StrictMath.sin;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL11.glPolygonMode;
 
@@ -53,13 +57,16 @@ public class AppRenderer {
 
             glEnable(GL_CULL_FACE);
             glCullFace(GL_BACK);
-            //glDisable(GL_DEPTH_TEST);
             int polyMode = glGetInteger(GL_POLYGON_MODE);
             if (entity.isWireMesh()){
                 glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
-                //glEnable(GL_CULL_FACE);
-                //glCullFace(GL_FRONT);
             }
+
+            int hasTexture = (entity.getMesh().hasTexture())? 1:0;
+
+            appShader.setUniform("hasTexture", hasTexture);
+
+
 
             //Set the modelView Matrix for this entity
             Matrix4f modelViewMatrix = transformation.getModelViewMatrix(entity, viewMatrix);
@@ -98,6 +105,7 @@ public class AppRenderer {
         appShader.createUniform("projectionMatrix");
         appShader.createUniform("modelViewMatrix");
         appShader.createUniform("texture_sampler");
+        appShader.createUniform("hasTexture");
 
     }
 }

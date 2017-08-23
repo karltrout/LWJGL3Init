@@ -13,7 +13,7 @@ import org.karltrout.graphicsEngine.terrains.fltFile.TerrainMesh;
  */
 public class Entity {
 
-    private final Mesh mesh;
+    private final Renderable mesh;
     private final Vector3f position;
     private float scale;
     private final Vector3f rotation;
@@ -21,7 +21,7 @@ public class Entity {
     private TerrainMesh currentTerrain;
     private Location location;
 
-    public Entity(Mesh mesh) {
+    public Entity(Renderable mesh) {
         this.mesh = mesh;
         position = new Vector3f(0, 0, 0);
         scale = 1;
@@ -56,7 +56,7 @@ public class Entity {
         this.rotation.z = z;
     }
 
-    public Mesh getMesh() {
+    public Renderable getMesh() {
         return mesh;
     }
 

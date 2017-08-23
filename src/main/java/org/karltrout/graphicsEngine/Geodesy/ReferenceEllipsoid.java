@@ -27,13 +27,14 @@ import static org.lwjgl.opengl.GL30.glGenerateMipmap;
 
 public class ReferenceEllipsoid {
 
-    private static final Number EQUATORIAL_RADIUS=63781370f; //meters
-    private static final Number POLAR_RADIUS=63567523f; //meters
+    public static final Number EQUATORIAL_RADIUS=63781370f; //meters
+    public static final Number POLAR_RADIUS=63567523f; //meters
 
     private static final int numberOfLatitude = 178;
     private static final int numberOfLongitude = 361;
 
     private static OBJLoader objLoader;
+    private static boolean atNight = false;
     private Logger logger = LogManager.getLogger(this.getClass());
 
     /**
@@ -143,20 +144,24 @@ public class ReferenceEllipsoid {
         objLoader = new OBJLoader();
         Vector3f[][] latitudes = pointCloud();
 
-        TextureData textureData = OpenGLLoader.decodeTextureFile("src/resources/worldtopobathy2004013x2.png"); //"src/resources/world.topo.bathy.200412.3x21600x10800.png");
+        String planetImg = "src/resources/worldtopobathy2004013x2.png";
+
+        if(atNight){
+            planetImg = "src/resources/earth_lights_4320x2.png";
+        }
+
+        TextureData textureData = OpenGLLoader.decodeTextureFile(planetImg); //worldtopobathy2004013x2.png"); //"src/resources/world.topo.21600x10800x10816x2.png");
 
         //float[] textures = new float[180*360];
         ArrayList<Vector2f> textureIndices = new ArrayList<>();
-        for (int i = 0; i < 180; i++) {
+        for (int i = 180; i >= 0; i--) {
 
             float y = (i == 0 )? (float)i : (i / 360f);
-            for (int j = 360; j > -1; j--) {
-                float x = j / 360f;
+            for (int j = 0; j < 361; j++) {
+                float x = (j / 360f);
                 textureIndices.add(new Vector2f(x, y));
             }
         }
-
-        System.out.println("Tex Height: "+textureData.getHeight()+" Width: "+textureData.getWidth()+" Id: "+textureData.getId());
 
         objLoader.setTextureArray(textureIndices);
         objLoader.setTexture(textureData);

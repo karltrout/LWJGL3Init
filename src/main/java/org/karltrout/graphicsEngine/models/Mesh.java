@@ -26,7 +26,7 @@ import static org.lwjgl.system.MemoryUtil.memFree;
  * Generate, create build wtf ever.
  * Created by karltrout on 7/22/17.
  */
-public class Mesh {
+public class Mesh implements Renderable {
 
     private TextureData texture;
     private int vaoId;
@@ -59,6 +59,7 @@ public class Mesh {
     }
 
     private void build(){
+
         // USE JOML Here...
         FloatBuffer floatBuffer = memAllocFloat(vertices.length);
         floatBuffer.put(vertices).flip();
@@ -127,6 +128,7 @@ public class Mesh {
         return vaoId;
     }
 
+    @Override
     public void cleanUp() {
         glDisableVertexAttribArray(0);
         // Delete the VBOs
@@ -142,6 +144,7 @@ public class Mesh {
         glDeleteVertexArrays(vaoId);
     }
 
+    @Override
     public void render() {
 
         if (texture != null) {
@@ -163,9 +166,13 @@ public class Mesh {
         glBindVertexArray(0);
     }
 
+    @Override
+    public boolean hasTexture() {
+        return texture != null;
+    }
+
     public void setTexture(TextureData texture)
     {
         this.texture = texture;
-        System.out.println("Texture id: "+texture.getId());
     }
 }
