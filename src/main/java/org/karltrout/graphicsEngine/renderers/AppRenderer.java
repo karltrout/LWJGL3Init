@@ -56,7 +56,7 @@ public class AppRenderer {
         for(Entity entity : entities) {
 
             glEnable(GL_CULL_FACE);
-            glCullFace(GL_BACK);
+            glCullFace(entity.getCullFace());
             int polyMode = glGetInteger(GL_POLYGON_MODE);
             if (entity.isWireMesh()){
                 glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );

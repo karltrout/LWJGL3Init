@@ -4,6 +4,7 @@ import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.karltrout.graphicsEngine.Location;
 import org.karltrout.graphicsEngine.terrains.fltFile.TerrainMesh;
+import org.lwjgl.opengl.GL11;
 
 /**
  * An Object in the World.
@@ -20,6 +21,7 @@ public class Entity {
     private Boolean wireMesh = false;
     private TerrainMesh currentTerrain;
     private Location location;
+    private int cullFace = GL11.GL_BACK;
 
     public Entity(Renderable mesh) {
         this.mesh = mesh;
@@ -83,5 +85,13 @@ public class Entity {
 
     public void setTerrain(TerrainMesh terrainMesh) {
         this.currentTerrain = terrainMesh;
+    }
+
+    public void setCullFace(int cullFace){
+        this.cullFace = cullFace;
+    }
+
+    public int getCullFace() {
+        return cullFace;
     }
 }

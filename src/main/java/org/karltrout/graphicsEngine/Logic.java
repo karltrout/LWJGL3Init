@@ -9,6 +9,7 @@ import org.karltrout.graphicsEngine.models.Mesh;
 import org.karltrout.graphicsEngine.models.Primitive;
 import org.karltrout.graphicsEngine.renderers.AppRenderer;
 import org.karltrout.graphicsEngine.terrains.fltFile.FltFileReader;
+import org.lwjgl.opengl.GL11;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -68,7 +69,7 @@ public class Logic implements ILogic {
 
             Entity planetEarth = new Entity(elipsoid);
             planetEarth.setScale(scaleFactor);
-            planetEarth.makeWireFrame(false);
+            planetEarth.makeWireFrame(true);
             entities.add(planetEarth);
 
             GeoSpacialTerrainMesh geoTerrainMesh = new GeoSpacialTerrainMesh(fltFileReader.hdr, fltFileReader.fltFile, 12);
@@ -76,8 +77,8 @@ public class Logic implements ILogic {
             Entity terrainEntity = new Entity(geoMesh);
             terrainEntity.setScale(scaleFactor);
             terrainEntity.makeWireFrame(true);
+            terrainEntity.setCullFace(GL11.GL_FRONT);
             //entities.add(terrainEntity);
-
 
            // bunnyEntity.setTerrain(geoTerrainMesh);
           //  bunnyEntity.setPosition(0,0,0);
@@ -92,11 +93,8 @@ public class Logic implements ILogic {
                 entities.add(new Entity(makeLatitudeLineAt(longitude)));
             }
             cameraLoc = new Vector3f(fltFileReader.hdr.getLatitude(), fltFileReader.hdr.getLongitude(), 500000.000f);
-            //cameraLoc = new Vector3f(0,0, 0.000f);
             Vector3f cameraPos = ReferenceEllipsoid.cartesianCoordinates( cameraLoc.x, cameraLoc.y, cameraLoc.z);
             camera.moveTo(cameraPos.x * scaleFactor ,cameraPos.y * scaleFactor ,cameraPos.z * scaleFactor);
-            //camera.moveTo(0 ,0,0);
-
             camera.moveRotation(  -45 + (-1 * cameraLoc.x), 0,   -90 + (-1 * cameraLoc.y) );
 
             System.out.println("camera Position: "+cameraPos);
@@ -143,15 +141,17 @@ public class Logic implements ILogic {
 
         if (window.isKeyPressed(GLFW_KEY_A)) {
             cameraInc.y -= travel;
-            if (cameraLoc.y > 180 ){
-                cameraLoc.y *= -1;
-            }
+            /*if (cameraLoc.y > 180 ){
+              //  cameraLoc.y *= -1;
+                prt("y > 180, Inverted y axis.");
+            }*/
             cameraLoc.y -= travel;
         } else if (window.isKeyPressed(GLFW_KEY_D)) {
             cameraInc.y += travel;
-            if (cameraLoc.y < -180 ){
-                cameraLoc.y *= -1;
-            }
+           /* if (cameraLoc.y < -180 ){
+             //   cameraLoc.y *= -1;
+                prt("y < -180, inverted y axis.");
+            }*/
             cameraLoc.y += travel;
         }
 
@@ -163,6 +163,10 @@ public class Logic implements ILogic {
             cameraInc.z += 100000;
             cameraLoc.z += 100000;
         }
+    }
+
+    private void prt(String string) {
+        System.out.println(string);
     }
 
     @Override
@@ -239,13 +243,13 @@ public class Logic implements ILogic {
 
     private Primitive makeLatitudeLineAt(int longitude){
 
-        float[] vertices = new float[180*3];
-        float[] verticeColors = new float[180*4];
+        float[] vertices = new float[181*3];
+        float[] verticeColors = new float[181*4];
 
         int vertexPointer = 0;
         int vertexColor = 0;
 
-        for (int i = -90; i < 90 ; i++) {
+        for (int i = -90; i <= 90 ; i++) {
 
             Vector3f vertex =  ReferenceEllipsoid.cartesianCoordinates(i , longitude, 250000.0d);
 
