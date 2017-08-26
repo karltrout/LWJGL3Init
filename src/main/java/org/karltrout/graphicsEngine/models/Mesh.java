@@ -1,6 +1,5 @@
 package org.karltrout.graphicsEngine.models;
 
-import org.karltrout.graphicsEngine.OBJLoader;
 import org.karltrout.graphicsEngine.textures.TextureData;
 import org.lwjgl.system.MemoryUtil;
 
@@ -34,22 +33,24 @@ public class Mesh implements Renderable {
 
 
     private int vertexCount;
-    private float[] colorIndices;
+    private float[] normalIndices;
     private float[] vertices;
     private int[] indices;
     private float[] texCoords;
     private int idxVboId;
-    private int colorVboId;
+    private int normalsVboId;
     private int texVboId;
     private Deque<Object> vboIdList;
+    private Material material;
 
 
-    public Mesh(float[] vertices, float[] colorData, float[] textureData, int[] indices) {
+    public Mesh(float[] vertices, float[] normals, float[] textureData, int[] indices, Material material) {
         this.vertexCount = indices.length;
         this.indices = indices;
         this.vertices = vertices;
-        this.colorIndices = colorData;
+        this.normalIndices = normals;
         this.texCoords = textureData;
+        this.material = material;
         build();
 
     }
@@ -61,8 +62,8 @@ public class Mesh implements Renderable {
     private void build(){
 
         // USE JOML Here...
-        FloatBuffer floatBuffer = memAllocFloat(vertices.length);
-        floatBuffer.put(vertices).flip();
+        FloatBuffer verticesBuffer = memAllocFloat(vertices.length);
+        verticesBuffer.put(vertices).flip();
 
         /* Generate a Vertex Array Object VAO. this
             object will be what is current until unbound
@@ -74,8 +75,8 @@ public class Mesh implements Renderable {
          */
         vertexVboId = glGenBuffers();
         glBindBuffer(GL_ARRAY_BUFFER, vertexVboId);
-        glBufferData(GL_ARRAY_BUFFER, floatBuffer, GL_STATIC_DRAW);
-        memFree(floatBuffer);
+        glBufferData(GL_ARRAY_BUFFER, verticesBuffer, GL_STATIC_DRAW);
+        memFree(verticesBuffer);
 
         // Define Vertex Buffer Data to the shaders as an attribute.
         glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0);
@@ -91,18 +92,6 @@ public class Mesh implements Renderable {
         //free the non jvm memory
         memFree(indicesBuffer);
 
-        // Color VBO
-        if (colorIndices != null) {
-            colorVboId = glGenBuffers();
-            FloatBuffer colourBuffer = memAllocFloat(colorIndices.length);
-            colourBuffer.put(colorIndices).flip();
-            glBindBuffer(GL_ARRAY_BUFFER, colorVboId);
-            glBufferData(GL_ARRAY_BUFFER, colourBuffer, GL_STATIC_DRAW);
-            memFree(colourBuffer);
-            glVertexAttribPointer(1, 3, GL_FLOAT, false, 0, 0);
-
-        }
-
         // texture VBO
         if(texCoords != null) {
             texVboId = glGenBuffers();
@@ -114,6 +103,19 @@ public class Mesh implements Renderable {
             glVertexAttribPointer(1, 2, GL_FLOAT, false, 0, 0);
 
         }
+
+        //NORMALS VBO
+        if (normalIndices != null) {
+            normalsVboId = glGenBuffers();
+            FloatBuffer normalsBuffer = memAllocFloat(normalIndices.length);
+            normalsBuffer.put(normalIndices).flip();
+            glBindBuffer(GL_ARRAY_BUFFER, normalsVboId);
+            glBufferData(GL_ARRAY_BUFFER, normalsBuffer, GL_STATIC_DRAW);
+            memFree(normalsBuffer);
+            glVertexAttribPointer(2, 3, GL_FLOAT, false, 0, 0);
+
+        }
+
         //unbind the VAO
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -138,7 +140,7 @@ public class Mesh implements Renderable {
         if(texture != null)
             glDeleteBuffers(texture.getId());
 
-        glDeleteBuffers(colorVboId);
+        glDeleteBuffers(normalsVboId);
         // Delete the VAO
         glBindVertexArray(0);
         glDeleteVertexArrays(vaoId);
@@ -157,18 +159,29 @@ public class Mesh implements Renderable {
         glBindVertexArray(vaoId);
         glEnableVertexAttribArray(0);
         glEnableVertexAttribArray(1);
+        glEnableVertexAttribArray(2);
 
         // Draw the vertices by thier index
         glDrawElements(GL_TRIANGLES,vertexCount, GL_UNSIGNED_INT, 0);
         // Restore state
         glDisableVertexAttribArray(0);
         glDisableVertexAttribArray(1);
+        glDisableVertexAttribArray(2);
         glBindVertexArray(0);
     }
 
     @Override
     public boolean hasTexture() {
         return texture != null;
+    }
+
+    @Override
+    public Material getMaterial() {
+        return this.material;
+    }
+
+    public void setMaterial(Material material) {
+        this.material = material;
     }
 
     public void setTexture(TextureData texture)

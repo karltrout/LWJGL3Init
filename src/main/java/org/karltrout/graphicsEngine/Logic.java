@@ -4,11 +4,10 @@ import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.karltrout.graphicsEngine.Geodesy.GeoSpacialTerrainMesh;
 import org.karltrout.graphicsEngine.Geodesy.ReferenceEllipsoid;
-import org.karltrout.graphicsEngine.models.Entity;
-import org.karltrout.graphicsEngine.models.Mesh;
-import org.karltrout.graphicsEngine.models.Primitive;
+import org.karltrout.graphicsEngine.models.*;
 import org.karltrout.graphicsEngine.renderers.AppRenderer;
 import org.karltrout.graphicsEngine.terrains.fltFile.FltFileReader;
+import org.karltrout.graphicsEngine.textures.TextureData;
 import org.lwjgl.opengl.GL11;
 
 import java.nio.file.Path;
@@ -25,12 +24,18 @@ import static org.lwjgl.opengl.GL11.*;
 public class Logic implements ILogic {
 
     private final AppRenderer renderer;
-    private final Vector3f cameraInc;
-    private Vector3f cameraLoc;
+    private final Vector3f cameraInc = new Vector3f();
+    private Vector3f cameraLoc = new Vector3f();
     private final Camera camera;
     private ArrayList<Entity> entities = new ArrayList<>();
     private static final float MOUSE_SENSITIVITY = 0.2f;
     private static final float CAMERA_POS_STEP = 200.0f;
+
+    private Vector3f ambientLight;
+    private PointLight pointLight;
+    private DirectionalLight directionalLight;
+    private float lightAngle;
+
     private static final float scaleFactor = .01f;
     private int MIN_HEIGHT = 1500;
     private int ind = 1;
@@ -40,8 +45,8 @@ public class Logic implements ILogic {
     public Logic() throws Exception {
         camera = new Camera();
         renderer = new AppRenderer(camera);
-        cameraInc = new Vector3f(0, 0, 0);
-        cameraLoc = new Vector3f(0, 0, 0);;
+        //cameraInc = new Vector3f(0, 0, 0);
+        //cameraLoc = new Vector3f(0, 0, 0);;
     }
 
     @Override
@@ -49,15 +54,20 @@ public class Logic implements ILogic {
 
         renderer.init();
 
+        float reflectance = 1f;
+        //Mesh mesh = OBJLoader.loadMesh("/models/bunny.obj");
+        //Material material = new Material(new Vector3f(0.2f, 0.5f, 0.5f), reflectance);
+
         //Add Our Entities to OpenGL Memory
         OBJLoader objLoader = new OBJLoader();
-       /* Mesh bunny = objLoader.loadObjModel("bunny");
+       /*
+        Mesh bunny = objLoader.loadObjModel("bunny");
         Entity bunnyEntity = new Entity(bunny);
-        bunnyEntity.setScale(100.5f);
+        bunnyEntity.setScale(1000.5f);
         bunnyEntity.setPosition(0.0f,00.00f,1.50f);
-        bunnyEntity.makeWireFrame(true);
-        entities.add(bunnyEntity);*/
-
+        bunnyEntity.makeWireFrame(false);
+        entities.add(bunnyEntity);
+        */
         //Add Terrain data to OPEN GL
         Path pathToFltHdr = Paths.get("resources/models/terrainModels/floatn34w112_13.hdr");
         Path pathToFltFile = Paths.get("resources/models/terrainModels/floatn34w112_13.flt");
@@ -69,16 +79,18 @@ public class Logic implements ILogic {
 
             Entity planetEarth = new Entity(elipsoid);
             planetEarth.setScale(scaleFactor);
-            planetEarth.makeWireFrame(true);
+            planetEarth.makeWireFrame(false);
+            //planetEarth.setCullFace(GL_FRONT);
             entities.add(planetEarth);
 
-            GeoSpacialTerrainMesh geoTerrainMesh = new GeoSpacialTerrainMesh(fltFileReader.hdr, fltFileReader.fltFile, 12);
+           /* GeoSpacialTerrainMesh geoTerrainMesh = new GeoSpacialTerrainMesh(fltFileReader.hdr, fltFileReader.fltFile, 12);
             Mesh geoMesh = geoTerrainMesh.buildMesh();
             Entity terrainEntity = new Entity(geoMesh);
             terrainEntity.setScale(scaleFactor);
             terrainEntity.makeWireFrame(true);
             terrainEntity.setCullFace(GL11.GL_FRONT);
             //entities.add(terrainEntity);
+            */
 
            // bunnyEntity.setTerrain(geoTerrainMesh);
           //  bunnyEntity.setPosition(0,0,0);
@@ -94,11 +106,29 @@ public class Logic implements ILogic {
             }
             cameraLoc = new Vector3f(fltFileReader.hdr.getLatitude(), fltFileReader.hdr.getLongitude(), 500000.000f);
             Vector3f cameraPos = ReferenceEllipsoid.cartesianCoordinates( cameraLoc.x, cameraLoc.y, cameraLoc.z);
+
             camera.moveTo(cameraPos.x * scaleFactor ,cameraPos.y * scaleFactor ,cameraPos.z * scaleFactor);
             camera.moveRotation(  -45 + (-1 * cameraLoc.x), 0,   -90 + (-1 * cameraLoc.y) );
 
             System.out.println("camera Position: "+cameraPos);
             System.out.println("camera location: "+ ReferenceEllipsoid.geocentricCoordinates(cameraPos.x, cameraPos.y, cameraPos.z));
+
+            ambientLight = new Vector3f(0.3f, 0.3f, 0.3f);
+            Vector3f lightColour = new Vector3f(1, 1, 1);
+            Vector3f lightPosition = new Vector3f(0, 0, 1);
+            float lightIntensity = .5f;
+            pointLight = new PointLight(lightColour, lightPosition, lightIntensity);
+            PointLight.Attenuation att = new PointLight.Attenuation(0.0f, 0.0f, 1.0f);
+            pointLight.setAttenuation(att);
+
+            lightPosition = new Vector3f(-1, 0, 0);
+            lightColour = new Vector3f(1, 1, 1);
+            directionalLight = new DirectionalLight(lightColour, lightPosition, lightIntensity);
+
+            directionalLight.setIntensity(1);
+            directionalLight.getColor().x = 1;
+            directionalLight.getColor().y = 1;
+            directionalLight.getColor().z = 1;
 
         }catch (Exception e){
             System.out.println(e.getMessage());
@@ -187,6 +217,33 @@ public class Logic implements ILogic {
                     , 0);
         }
 
+
+        // Update directional light direction, intensity and colour
+        directionalLight.getDirection().x = camera.getPosition().x;
+        directionalLight.getDirection().y = camera.getPosition().y;
+           /*  lightAngle += 1.1f;
+        if (lightAngle > 360 ) lightAngle = 0.0f;
+   if (lightAngle > 90) {
+            directionalLight.setIntensity(0);
+            if (lightAngle >= 360) {
+                lightAngle = -90;
+            }
+        } else if (lightAngle <= -80 || lightAngle >= 80) {
+            float factor = 1 - (float) (Math.abs(lightAngle) - 80) / 10.0f;
+            directionalLight.setIntensity(factor);
+            directionalLight.getColor().y = Math.max(factor, 0.9f);
+            directionalLight.getColor().z = Math.max(factor, 0.5f);
+        } else {
+
+        directionalLight.setIntensity(1);
+        directionalLight.getColor().x = 1;
+        directionalLight.getColor().y = 1;
+        directionalLight.getColor().z = 1;
+
+        double angRad = Math.toRadians(lightAngle);
+        directionalLight.getDirection().x = (float) Math.sin(angRad);
+        directionalLight.getDirection().y = (float) Math.cos(angRad);
+*/
     }
 
     @Override
@@ -197,7 +254,7 @@ public class Logic implements ILogic {
             window.setResized(false);
         }
 
-      renderer.render(entities.toArray(new Entity[entities.size()]), window);
+      renderer.render(entities.toArray(new Entity[entities.size()]), window, ambientLight, pointLight, directionalLight);
 
     }
     @Override
@@ -237,7 +294,8 @@ public class Logic implements ILogic {
 
         }
 
-       return new Primitive(vertices, verticeColors, GL_LINE_LOOP, 3);
+        Material material = new Material();
+       return new Primitive(vertices, verticeColors, GL_LINE_LOOP, 3, material);
 
     }
 
@@ -264,7 +322,8 @@ public class Logic implements ILogic {
 
         }
 
-        return new Primitive(vertices, verticeColors, GL_LINE_STRIP, 3);
+        Material material = new Material();
+        return new Primitive(vertices, verticeColors, GL_LINE_STRIP, 3, material);
 
     }
 

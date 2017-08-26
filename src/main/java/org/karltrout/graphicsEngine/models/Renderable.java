@@ -9,4 +9,7 @@ public interface Renderable {
     void render();
 
     boolean hasTexture();
+
+    Material getMaterial();
+
 }

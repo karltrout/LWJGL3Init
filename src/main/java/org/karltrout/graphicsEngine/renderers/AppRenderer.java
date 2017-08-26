@@ -1,10 +1,14 @@
 package org.karltrout.graphicsEngine.renderers;
 
 import org.joml.Matrix4f;
+import org.joml.Vector3f;
+import org.joml.Vector4f;
 import org.karltrout.graphicsEngine.Camera;
 import org.karltrout.graphicsEngine.Geodesy.ReferenceEllipsoid;
 import org.karltrout.graphicsEngine.Window;
+import org.karltrout.graphicsEngine.models.DirectionalLight;
 import org.karltrout.graphicsEngine.models.Entity;
+import org.karltrout.graphicsEngine.models.PointLight;
 import org.karltrout.graphicsEngine.shaders.DefaultShader;
 import org.lwjgl.opengl.GL11;
 
@@ -34,11 +38,15 @@ public class AppRenderer {
 
     private Transformation transformation;
 
+    private final float specularPower;
+
     public AppRenderer( Camera camera ) throws Exception {
         this.camera = camera;
+        specularPower = 10f;
     }
 
-    public void render(Entity[] entities, Window window) {
+    public void render(Entity[] entities, Window window, Vector3f ambientLight,
+                       PointLight pointLight, DirectionalLight directionalLight ) {
 
         prepare();
 
@@ -51,6 +59,26 @@ public class AppRenderer {
 
         // Update view Matrix
         Matrix4f viewMatrix = transformation.getViewMatrix(camera);
+        // Update Light Uniforms
+        appShader.setUniform("ambientLight", ambientLight);
+        appShader.setUniform("specularPower", specularPower);
+
+        // Get a copy of the point light object and transform its position to view coordinates
+        PointLight currPointLight = new PointLight(pointLight);
+        Vector3f lightPos = currPointLight.getPosition();
+        Vector4f aux = new Vector4f(lightPos, 1);
+        aux.mul(viewMatrix);
+        lightPos.x = aux.x;
+        lightPos.y = aux.y;
+        lightPos.z = aux.z;
+        //appShader.setUniform("pointLight", currPointLight);
+
+        // Get a copy of the directional light object and transform its position to view coordinates
+        DirectionalLight currDirLight = new DirectionalLight(directionalLight);
+        Vector4f dir = new Vector4f(currDirLight.getDirection(), 0);
+        dir.mul(viewMatrix);
+        currDirLight.setDirection(new Vector3f(dir.x, dir.y, dir.z));
+        appShader.setUniform("directionalLight", currDirLight);
 
         // Render each gameItem
         for(Entity entity : entities) {
@@ -62,16 +90,11 @@ public class AppRenderer {
                 glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
             }
 
-            int hasTexture = (entity.getMesh().hasTexture())? 1:0;
-
-            appShader.setUniform("hasTexture", hasTexture);
-
-
-
             //Set the modelView Matrix for this entity
             Matrix4f modelViewMatrix = transformation.getModelViewMatrix(entity, viewMatrix);
             appShader.setUniform("modelViewMatrix", modelViewMatrix);
-
+            // Render the mesh for this game item
+            appShader.setUniform("material", entity.getMesh().getMaterial());
             // Render the mesh for this game item
             entity.getMesh().render();
             glPolygonMode(GL_FRONT_AND_BACK, polyMode);
@@ -105,7 +128,16 @@ public class AppRenderer {
         appShader.createUniform("projectionMatrix");
         appShader.createUniform("modelViewMatrix");
         appShader.createUniform("texture_sampler");
-        appShader.createUniform("hasTexture");
+        //appShader.createUniform("hasTexture");
+        // Create uniform for material
+        appShader.createMaterialUniform("material");
+        // Create lighting related uniforms
+        appShader.createUniform("specularPower");
+        appShader.createUniform("ambientLight");
+        //appShader.createPointLightUniform("pointLight");
+        //appShader.createSpotLightUniform("spotLight");
+        appShader.createDirectionalLightUniform("directionalLight");
+
 
     }
 }

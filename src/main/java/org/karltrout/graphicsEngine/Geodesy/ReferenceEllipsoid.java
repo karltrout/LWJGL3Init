@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import static org.lwjgl.opengl.GL11.*;
@@ -154,6 +155,7 @@ public class ReferenceEllipsoid {
 
         //float[] textures = new float[180*360];
         ArrayList<Vector2f> textureIndices = new ArrayList<>();
+
         for (int i = 180; i >= 0; i--) {
 
             float y = (i == 0 )? (float)i : (i / 360f);
@@ -167,6 +169,7 @@ public class ReferenceEllipsoid {
         objLoader.setTexture(textureData);
 
         ArrayList<Vector3f> pointsList = new ArrayList<>();
+        ArrayList<Vector3f> normalIndices = new ArrayList<>();
 
         for (int la = 0; la < latitudes.length ; la++) {
             Vector3f[] longitudes = latitudes[la];
@@ -193,29 +196,105 @@ public class ReferenceEllipsoid {
                 String[][] faceVector = new String[3][3];
                 faceVector[0][0] = String.valueOf(tl);
                 faceVector[0][1] = String.valueOf(tl);
+                faceVector[0][2] = String.valueOf(tl);
+
                 faceVector[1][0] = String.valueOf(bl);
                 faceVector[1][1] = String.valueOf(bl);
+                faceVector[1][2] = String.valueOf(bl);
+
                 faceVector[2][0] = String.valueOf(tr);
                 faceVector[2][1] = String.valueOf(tr);
+                faceVector[2][2] = String.valueOf(tr);
+
                 faceList.add(faceVector);
                 //System.out.println("Face cnt: "+ faceList.size()+" face 1 : "+faceVector[0][0]+", "+faceVector[1][0]+", "+faceVector[2][0]);
 
                 String[][] faceVector2 = new String[3][3];
                 faceVector2[0][0] = String.valueOf(tr);
                 faceVector2[0][1] = String.valueOf(tr);
+                faceVector2[0][2] = String.valueOf(tr);
+
                 faceVector2[1][0] = String.valueOf(bl);
                 faceVector2[1][1] = String.valueOf(bl);
+                faceVector2[1][2] = String.valueOf(bl);
+
                 faceVector2[2][0] = String.valueOf(br);
                 faceVector2[2][1] = String.valueOf(br);
+                faceVector2[2][2] = String.valueOf(br);
+
                 faceList.add(faceVector2);
-                //System.out.println("Face cnt: "+ faceList.size()+" face 2 : "+faceVector2[0][0]+", "+faceVector2[1][0]+", "+faceVector2[2][0]);
+               // System.out.println("Face cnt: "+ faceList.size()+" face 2 : "+faceVector2[0][0]+", "+faceVector2[1][0]+", "+faceVector2[2][0]);
 
             }
         }
         //System.out.println("Number 0f Earth Faces "+faceList.size());
         objLoader.setFaces(faceList);
 
+        normalIndices = createNormals(pointsList, faceList);
+
+        objLoader.setNormals(normalIndices);
+
         return objLoader;
+    }
+
+    /**
+     *  see: https://www.khronos.org/opengl/wiki/Calculating_a_Surface_Normal
+     * @param pointsList
+     * @param faceList
+     * @return
+     */
+    private static ArrayList<Vector3f> createNormals(ArrayList<Vector3f> pointsList, ArrayList<String[][]> faceList) {
+
+        HashMap<Integer, ArrayList<Vector3f>> vectorNormals = new HashMap<>();
+
+        for (String[][] face :
+                faceList) {
+            int i0 = Integer.valueOf(face[0][0]) -1;
+            int i1 = Integer.valueOf(face[1][0]) -1;
+            int i2 = Integer.valueOf(face[2][0]) -1;
+
+            Vector3f v0 = new Vector3f(pointsList.get(i0));
+            Vector3f v1 = new Vector3f(pointsList.get(i1));
+            Vector3f v2 = new Vector3f(pointsList.get(i2));
+
+            Vector3f u = v1.sub(v0);
+            Vector3f v = v2.sub(v0);
+
+            Vector3f normal = new Vector3f();
+            /*
+                Set Normal.x to (multiply U.y by V.z) minus (multiply U.z by V.y)
+            	Set Normal.y to (multiply U.z by V.x) minus (multiply U.x by V.z)
+            	Set Normal.z to (multiply U.x by V.y) minus (multiply U.y by V.x)
+             */
+            normal.x = (u.y * v.z) - (u.z * v.y);
+            normal.y = (u.z * v.x) - (u.x * v.z);
+            normal.z = (u.x * v.y) - (u.y * v.x);
+
+            if (!vectorNormals.containsKey(i0))
+                vectorNormals.put(i0, new ArrayList<>());
+            vectorNormals.get(i0).add(normal.normalize());
+
+            if (!vectorNormals.containsKey(i1))
+                vectorNormals.put(i1, new ArrayList<>());
+            vectorNormals.get(i1).add(normal.normalize());
+
+            if (!vectorNormals.containsKey(i2))
+                vectorNormals.put(i2, new ArrayList<>());
+            vectorNormals.get(i2).add(normal.normalize());
+
+        }
+        ArrayList<Vector3f> results = new ArrayList<>();
+        for (int v3i: vectorNormals.keySet()) {
+
+            Vector3f aveVector = new Vector3f(0,0,0);
+
+            for ( Vector3f v3x: vectorNormals.get(v3i) ) {
+                aveVector = aveVector.add(v3x);
+            }
+            results.add( aveVector.div(vectorNormals.get(v3i).size()).normalize() );
+
+        }
+        return results;
     }
 
 }

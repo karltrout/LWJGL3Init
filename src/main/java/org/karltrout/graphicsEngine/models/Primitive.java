@@ -18,18 +18,20 @@ public class Primitive implements Renderable {
     private int vaoId;
     private int vboId;
     private int vertexCount;
-    private int colorVboId;
     private float[] vertices;
     private float[] colorIndices;
     private int mode;
     private int depth;
 
-    public Primitive(float[] vertices, float[] colorData, int mode, int depth ) {
+    private Material material;
+
+    public Primitive(float[] vertices, float[] colorData, int mode, int depth, Material material ) {
         this.mode = mode;
         this.depth = depth;
         this.vertexCount = vertices.length/depth;
         this.vertices = vertices;
         this.colorIndices = colorData;
+        this.material = material;
         build();
 
     }
@@ -62,7 +64,6 @@ public class Primitive implements Renderable {
         // Delete the VBOs
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glDeleteBuffers(vboId);
-        glDeleteBuffers(colorVboId);
         // Delete the VAO
         glBindVertexArray(0);
         glDeleteVertexArrays(vaoId);
@@ -87,6 +88,11 @@ public class Primitive implements Renderable {
     @Override
     public boolean hasTexture() {
         return false;
+    }
+
+    @Override
+    public Material getMaterial() {
+        return material;
     }
 
 }

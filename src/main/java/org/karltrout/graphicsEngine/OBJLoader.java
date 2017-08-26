@@ -2,6 +2,7 @@ package org.karltrout.graphicsEngine;
 
 import org.joml.Vector2f;
 import org.joml.Vector3f;
+import org.karltrout.graphicsEngine.models.Material;
 import org.karltrout.graphicsEngine.models.Mesh;
 import org.karltrout.graphicsEngine.textures.TextureData;
 
@@ -23,7 +24,7 @@ public class OBJLoader {
 
     List<Vector3f> vertices = new ArrayList<>();
     List<Vector2f> textures = new ArrayList();
-    List<Vector3f> normals = new ArrayList<>();
+    private List<Vector3f> normals = new ArrayList<>();
     List<Integer> indices = new ArrayList<>();
     List<String[][]> faces = new ArrayList<>();
 
@@ -128,14 +129,16 @@ public class OBJLoader {
             indiciesArray[i] = indices.get(i);
         }
 
+        Material material = new Material();
         Mesh mesh;
         if (this.textures.size() > 0) {
             System.out.println("textureArray cnt: "+textureArray.length);
-            mesh = new Mesh(verticiesArray, null, textureArray, indiciesArray);
+            material.setTexture(texture);
+            mesh = new Mesh(verticiesArray, normalsArray, textureArray, indiciesArray, material);
             mesh.setTexture(this.texture);
         }
         else {
-            mesh = new Mesh(verticiesArray, textureArray, null, indiciesArray);
+            mesh = new Mesh(verticiesArray, normalsArray, null, indiciesArray, material);
         }
 
         return mesh;
@@ -169,9 +172,9 @@ public class OBJLoader {
             normalsArray[currentVertexPointer * 3 + 2] = currentNorm.z;
         }
         else{
-            normalsArray[(currentVertexPointer) * 3] = 0 ;
-            normalsArray[(currentVertexPointer) * 3 + 1] = 0 ;
-            normalsArray[(currentVertexPointer) * 3 + 2] =0;
+            normalsArray[(currentVertexPointer) * 3] = 1 ;
+            normalsArray[(currentVertexPointer) * 3 + 1] = 1 ;
+            normalsArray[(currentVertexPointer) * 3 + 2] = 1;
 
         }
     }
@@ -184,4 +187,8 @@ public class OBJLoader {
         this.texture = texture;
     }
 
+
+    public void setNormals(List<Vector3f> normals) {
+        this.normals = normals;
+    }
 }
