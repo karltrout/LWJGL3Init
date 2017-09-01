@@ -22,6 +22,10 @@ public class Entity {
     private TerrainMesh currentTerrain;
     private Location location;
     private int cullFace = GL11.GL_BACK;
+    private int frontFace = GL11.GL_CCW;
+
+    private int minAltitude = 0;
+    private int maxAltitude = 120000000;
 
     public Entity(Renderable mesh) {
         this.mesh = mesh;
@@ -93,5 +97,29 @@ public class Entity {
 
     public int getCullFace() {
         return cullFace;
+    }
+
+    public int getMinAltitude() {
+        return minAltitude;
+    }
+
+    public void setMinAltitude(int minAltitude) {
+        this.minAltitude = minAltitude;
+    }
+
+    public int getMaxAltitude() {
+        return maxAltitude;
+    }
+
+    public void setMaxAltitude(int maxAltitude) {
+        this.maxAltitude = maxAltitude;
+    }
+
+    public int getFrontFace() {
+        return frontFace;
+    }
+
+    public void setFrontFace(int frontFace) {
+        this.frontFace = frontFace;
     }
 }

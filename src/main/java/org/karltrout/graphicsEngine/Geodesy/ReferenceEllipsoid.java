@@ -1,6 +1,5 @@
 package org.karltrout.graphicsEngine.Geodesy;
 
-import de.matthiasmann.twl.utils.PNGDecoder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joml.Vector2f;
@@ -9,17 +8,8 @@ import org.karltrout.graphicsEngine.OBJLoader;
 import org.karltrout.graphicsEngine.OpenGLLoader;
 import org.karltrout.graphicsEngine.textures.TextureData;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
-
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL30.glGenerateMipmap;
 
 /**
  * Package to contain Reference Ellipsoid methods and Static calculations based on the Ellipsoid.
@@ -28,15 +18,14 @@ import static org.lwjgl.opengl.GL30.glGenerateMipmap;
 
 public class ReferenceEllipsoid {
 
-    public static final Number EQUATORIAL_RADIUS=63781370f; //meters
-    public static final Number POLAR_RADIUS=63567523f; //meters
+    private static final Number EQUATORIAL_RADIUS=63781370f; //meters
+    private static final Number POLAR_RADIUS=63567523f; //meters
 
     private static final int numberOfLatitude = 178;
     private static final int numberOfLongitude = 361;
 
-    private static OBJLoader objLoader;
     private static boolean atNight = false;
-    private Logger logger = LogManager.getLogger(this.getClass());
+    private static final Logger logger = LogManager.getLogger(ReferenceEllipsoid.class);
 
     /**
      * Calculate the Distance for the Center of the Earths Reference Ellipsoid.
@@ -45,7 +34,7 @@ public class ReferenceEllipsoid {
      * @return Number holding distance in Kilometers.
      */
 
-    public static Number distanceFromCenterAtLatitude(double latitude){
+     public static Number distanceFromCenterAtLatitude(double latitude){
 
         double radianLatitude = Math.toRadians(latitude);
         return Math.sqrt(
@@ -60,28 +49,21 @@ public class ReferenceEllipsoid {
 
     public static Vector3f geocentricCoordinates(double x, double y , double z){
 
-        //System.out.println("X: "+x+" Y: "+y+" Z: "+z);
         Vector3f location = new Vector3f();
-
         double radius = Math.sqrt((Math.pow(y,2) + Math.pow(z, 2)));
 
         double e2 = 0.00669437999014; //(eccentricitySquared)
-        double θ = 90 - Math.toDegrees(Math.acos( z / POLAR_RADIUS.doubleValue() ));
-        // β(Φ)=atan(sqrt (1 - e^2) * tan(Φ))
+        double θ = 90 - Math.toDegrees(Math.acos( z / POLAR_RADIUS.doubleValue()));
+        //double θ =  z / POLAR_RADIUS.doubleValue();
+// β(Φ)=atan(sqrt (1 - e^2) * tan(Φ))
         double ϕ = Math.toDegrees( Math.atan(( Math.tan(Math.toRadians(θ)) / Math.sqrt(1 - e2) )) );
-
         double altitude = radiusOfCurvature(ϕ).doubleValue();
-
-
         double λ = Math.toDegrees(Math.atan2( y , x ));
 
         location.x = (float) ϕ; //latitude
         location.y = (float) λ; //longitude
         location.z = (float) z; //altitude; //height
-
-
-       // System.out.println("ϕ : "+  ϕ + " λ: "+λ+ " R: "+radius+" H: "+z+" A: "+altitude );
-
+        //logger.debug("ϕ : "+  ϕ + " λ: "+λ+ " R: "+radius+" H: "+z+" A: "+altitude );
         return location;
     }
 
@@ -142,7 +124,7 @@ public class ReferenceEllipsoid {
 
     public static OBJLoader referenceElipsoidMesh(){
 
-        objLoader = new OBJLoader();
+        OBJLoader objLoader = new OBJLoader();
         Vector3f[][] latitudes = pointCloud();
 
         String planetImg = "src/resources/worldtopobathy2004013x2.png";

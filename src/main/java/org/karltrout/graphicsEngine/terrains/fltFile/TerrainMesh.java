@@ -23,7 +23,7 @@ public class TerrainMesh {
     // Want to use this instead of hard coding the divisor
     // static final float GEO_ARC_SECOND_RESOLUTION = 1 / 3;
     private static final int MIN_RESOLUTION = 12 ;
-    private final FltFileReader.FltHeader hdr;
+    private FltFileReader.FltHeader hdr = null;
     private int resolution = 1;
 
     private OBJLoader objLoader;
@@ -115,6 +115,9 @@ public class TerrainMesh {
 
     public TerrainMesh(FltFileReader.FltHeader hdr, FltFile fltFile) {
         this(hdr, fltFile, MIN_RESOLUTION);
+    }
+
+    public TerrainMesh() {
     }
 
     public Mesh buildMesh(){

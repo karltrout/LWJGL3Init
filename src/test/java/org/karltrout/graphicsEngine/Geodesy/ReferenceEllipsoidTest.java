@@ -74,18 +74,14 @@ public class ReferenceEllipsoidTest {
     @Theory
     public void convertGeoDesicToCartisianAndBack(float latitude){
 
-
-        //float latitude = 34.00f;
         Random rand = new Random();
         float longitude = ( rand.nextFloat() * 360.0f ) - 180.0f;
 
         System.out.println("lat: "+latitude+" lon: "+longitude);
-        //float longitude = (float) Math.random();
-        Vector3f vector3f = ReferenceEllipsoid.cartesianCoordinates(latitude, longitude,0 );
-
+        Vector3f vector3f = ReferenceEllipsoid.cartesianCoordinates(latitude, longitude,0);
         Vector3f location = ReferenceEllipsoid.geocentricCoordinates(vector3f.x, vector3f.y, vector3f.z);
-        assertEquals(latitude, location.x, .0001f);
-        assertEquals(longitude, location.y, .0001f);
+        assertEquals(latitude, location.x, .001f);
+        assertEquals(longitude, location.y, .001f);
     }
 
 }

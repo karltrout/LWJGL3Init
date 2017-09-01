@@ -1,5 +1,7 @@
 package org.karltrout.graphicsEngine;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.karltrout.graphicsEngine.Geodesy.GeoSpacialTerrainMesh;
@@ -23,6 +25,8 @@ import static org.lwjgl.opengl.GL11.*;
  */
 public class Logic implements ILogic {
 
+    Logger logger = LogManager.getLogger(Logic.class);
+
     private final AppRenderer renderer;
     private final Vector3f cameraInc = new Vector3f();
     private Vector3f cameraLoc = new Vector3f();
@@ -40,13 +44,12 @@ public class Logic implements ILogic {
     private int MIN_HEIGHT = 1500;
     private int ind = 1;
     private double KILOMETERS_PER_LATITUDE_DEGREE =110.5742727d;
-    private float SPEED_KPH = 100000 /60 /60f; // ~.27 km  per seconds...
+    private float SPEED_KPH = 1000; // ~.27 km  per seconds...
+    private float zoomSpd = 100;
 
     public Logic() throws Exception {
         camera = new Camera();
         renderer = new AppRenderer(camera);
-        //cameraInc = new Vector3f(0, 0, 0);
-        //cameraLoc = new Vector3f(0, 0, 0);;
     }
 
     @Override
@@ -83,14 +86,16 @@ public class Logic implements ILogic {
             //planetEarth.setCullFace(GL_FRONT);
             entities.add(planetEarth);
 
-           /* GeoSpacialTerrainMesh geoTerrainMesh = new GeoSpacialTerrainMesh(fltFileReader.hdr, fltFileReader.fltFile, 12);
+            GeoSpacialTerrainMesh geoTerrainMesh = new GeoSpacialTerrainMesh(fltFileReader.hdr, fltFileReader.fltFile, 1);
             Mesh geoMesh = geoTerrainMesh.buildMesh();
             Entity terrainEntity = new Entity(geoMesh);
+            terrainEntity.setMaxAltitude(10000);
             terrainEntity.setScale(scaleFactor);
             terrainEntity.makeWireFrame(true);
-            terrainEntity.setCullFace(GL11.GL_FRONT);
-            //entities.add(terrainEntity);
-            */
+            terrainEntity.setCullFace(GL11.GL_BACK);
+            terrainEntity.setFrontFace(GL11.GL_CW);
+            entities.add(terrainEntity);
+
 
            // bunnyEntity.setTerrain(geoTerrainMesh);
           //  bunnyEntity.setPosition(0,0,0);
@@ -104,16 +109,19 @@ public class Logic implements ILogic {
                 int longitude = i - 180;
                 entities.add(new Entity(makeLatitudeLineAt(longitude)));
             }
-            cameraLoc = new Vector3f(fltFileReader.hdr.getLatitude(), fltFileReader.hdr.getLongitude(), 500000.000f);
+            logger.debug("Latitude: "+fltFileReader.hdr.getLatitude());
+            cameraLoc = new Vector3f(fltFileReader.hdr.getLatitude(), fltFileReader.hdr.getLongitude(), 50000.000f);
             Vector3f cameraPos = ReferenceEllipsoid.cartesianCoordinates( cameraLoc.x, cameraLoc.y, cameraLoc.z);
+            camera.setLocation(cameraLoc);
+            //logger.debug("Camera Altitude : "+camera.getLocation().z);
 
             camera.moveTo(cameraPos.x * scaleFactor ,cameraPos.y * scaleFactor ,cameraPos.z * scaleFactor);
             camera.moveRotation(  -45 + (-1 * cameraLoc.x), 0,   -90 + (-1 * cameraLoc.y) );
 
             System.out.println("camera Position: "+cameraPos);
-            System.out.println("camera location: "+ ReferenceEllipsoid.geocentricCoordinates(cameraPos.x, cameraPos.y, cameraPos.z));
+            System.out.println("camera location: "+ camera.getLocation());//ReferenceEllipsoid.geocentricCoordinates(cameraPos.x, cameraPos.y, cameraPos.z).sub(new Vector3f(0,0,ReferenceEllipsoid.fe)));
 
-            ambientLight = new Vector3f(0.3f, 0.3f, 0.3f);
+            ambientLight = new Vector3f(0.2f, 0.2f, 0.2f);
             Vector3f lightColour = new Vector3f(1, 1, 1);
             Vector3f lightPosition = new Vector3f(0, 0, 1);
             float lightIntensity = .5f;
@@ -140,7 +148,7 @@ public class Logic implements ILogic {
     @Override
     public void input(Window window, Mouse mouse) {
 
-        float travel = (float) (SPEED_KPH /KILOMETERS_PER_LATITUDE_DEGREE);
+        float travel = (float) (zoomSpd /60 /60 /KILOMETERS_PER_LATITUDE_DEGREE);
         if(cameraLoc.x <= -90 || cameraLoc.x >= 90 ){
             cameraLoc.x =  cameraLoc.x < 0 ? -90 : 90;
             ind = ind * -1;
@@ -186,13 +194,29 @@ public class Logic implements ILogic {
         }
 
         if (window.isKeyPressed(GLFW_KEY_Z)) {
-            cameraInc.z -= 100000;
-            cameraLoc.z -= 100000;
+            cameraInc.z -= zoomSpd;
+            cameraLoc.z -= zoomSpd;
             if (cameraLoc.z < MIN_HEIGHT) cameraLoc.z = MIN_HEIGHT;
         } else if (window.isKeyPressed(GLFW_KEY_X)) {
-            cameraInc.z += 100000;
-            cameraLoc.z += 100000;
+            cameraInc.z += zoomSpd;
+            cameraLoc.z += zoomSpd;
         }
+
+        adjustCameraSpdBasedOnheight(cameraLoc.z);
+
+    }
+
+    private void adjustCameraSpdBasedOnheight(float z) {
+
+        if ( z * scaleFactor > 15000 ) zoomSpd = 100000;
+        else if ( z * scaleFactor > 7500 )zoomSpd = 10000;
+        else if( z * scaleFactor > 6000) zoomSpd = 1000;
+        else if( z * scaleFactor > 5000) zoomSpd = 500;
+        else if( z * scaleFactor > 3000) zoomSpd = 400;
+        else if( z * scaleFactor > 2000) zoomSpd = 300;
+        else if( z * scaleFactor > 1000) zoomSpd = 200;
+        else zoomSpd = 100;
+
     }
 
     private void prt(String string) {
@@ -203,9 +227,9 @@ public class Logic implements ILogic {
     public void update(float interval, Mouse mouse) {
         // Update camera position
         if (cameraInc.length() > 0) {
-
             Vector3f p = ReferenceEllipsoid.cartesianCoordinates(cameraLoc.x, cameraLoc.y,  cameraLoc.z);
             camera.moveToLocation(p.x * scaleFactor , p.y  * scaleFactor , p.z  * scaleFactor );
+            camera.setLocation(cameraLoc);
             camera.moveRotation(cameraInc.x * -1 , 0, cameraInc.y * -1);
 
             cameraInc.set(0, 0, 0);
@@ -219,8 +243,8 @@ public class Logic implements ILogic {
 
 
         // Update directional light direction, intensity and colour
-        directionalLight.getDirection().x = camera.getPosition().x;
-        directionalLight.getDirection().y = camera.getPosition().y;
+        directionalLight.getDirection().x =  -1;// camera.getPosition().x;
+        directionalLight.getDirection().y =  -1; //camera.getPosition().y;
            /*  lightAngle += 1.1f;
         if (lightAngle > 360 ) lightAngle = 0.0f;
    if (lightAngle > 90) {

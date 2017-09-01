@@ -1,5 +1,6 @@
 package org.karltrout.graphicsEngine.renderers;
 
+import org.apache.logging.log4j.Logger;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -11,6 +12,8 @@ import org.karltrout.graphicsEngine.models.Entity;
 import org.karltrout.graphicsEngine.models.PointLight;
 import org.karltrout.graphicsEngine.shaders.DefaultShader;
 import org.lwjgl.opengl.GL11;
+
+import java.util.logging.LogManager;
 
 import static java.lang.Math.PI;
 import static java.lang.Math.cos;
@@ -24,6 +27,7 @@ import static org.lwjgl.opengl.GL11.glPolygonMode;
  */
 public class AppRenderer {
 
+    Logger logger = org.apache.logging.log4j.LogManager.getLogger(AppRenderer.class);
     private DefaultShader appShader;
     private Camera camera;
 
@@ -83,8 +87,14 @@ public class AppRenderer {
         // Render each gameItem
         for(Entity entity : entities) {
 
+            if ( camera.getLocation().z * entity.getScale()  > entity.getMaxAltitude()) {
+                //logger.debug("camera Altitude: "+(camera.getLocation().z * entity.getScale() )+" entity Altitude: "+entity.getMaxAltitude());
+                continue;
+            }
+
             glEnable(GL_CULL_FACE);
             glCullFace(entity.getCullFace());
+            glFrontFace(entity.getFrontFace());
             int polyMode = glGetInteger(GL_POLYGON_MODE);
             if (entity.isWireMesh()){
                 glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
