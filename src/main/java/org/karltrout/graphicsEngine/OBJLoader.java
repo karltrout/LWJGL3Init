@@ -10,32 +10,26 @@ import org.karltrout.graphicsEngine.textures.TextureData;
 
 import java.io.*;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+import java.util.SortedMap;
+import java.util.TreeMap;
+
 
 /**
  * yeah this needs a lot of work...
+ * getting better
  * Created by karltrout on 6/9/17.
  */
 public class OBJLoader {
 
-    float[] verticiesArray = null;
-    float[] normalsArray = null;
-    float[] textureArray = null;
-    int[] indiciesArray = null;
-
-
-    List<Vector3f> vertices = new ArrayList<>();
-    List<Vector2f> textures = new ArrayList();
+    private float[] normalsArray = null;
+    private float[] textureArray = null;
+    private List<Vector3f> vertices = new ArrayList<>();
+    private List<Vector2f> textures = new ArrayList<>();
     private List<Vector3f> normals = new ArrayList<>();
-    List<Integer> indices = new ArrayList<>();
-    List<String[][]> faces = new ArrayList<>();
-
-
-    String line = null;
-    FileReader reader = null;
+    private List<Integer> indices = new ArrayList<>();
+    private List<String[][]> faces = new ArrayList<>();
     private TextureData texture;
-
 
     private final Logger logger = LogManager.getLogger(this.getClass());
 
@@ -44,11 +38,12 @@ public class OBJLoader {
 
     public Mesh loadObjModel(String fileName) throws FileNotFoundException {
 
-        reader = new FileReader(new File("resources/models/" + fileName + ".obj"));
+        logger.debug("Loading Model :"+fileName);
+        FileReader reader = new FileReader(new File("resources/models/" + fileName + ".obj"));
         BufferedReader bufferedReader = new BufferedReader(reader);
         try {
             while (true) {
-                line = bufferedReader.readLine();
+                String line = bufferedReader.readLine();
                 if (line == null) break;
                 String[] currentLine = line.split(" ");
                 if (line.startsWith("v ")) {
@@ -98,14 +93,10 @@ public class OBJLoader {
 
         return this.build();
     }
-
-
     public void setVertices(List<Vector3f> vertices){
-
         this.vertices = vertices;
         textureArray = new float[ this.vertices.size() * 2 ];
         normalsArray = new float[ this.vertices.size() * 3 ];
-
     }
 
     public void setFaces(List<String[][]> facesList){
@@ -121,30 +112,30 @@ public class OBJLoader {
 
         }
 
-        verticiesArray = new float[vertices.size() * 3];
-        indiciesArray = new int[indices.size()];
+        float[] verticesArray = new float[vertices.size() * 3];
+        int[] indicesArray = new int[indices.size()];
 
         int vertexPointer = 0;
         for (Vector3f vertex : vertices) {
-            verticiesArray[vertexPointer++] = vertex.x;
-            verticiesArray[vertexPointer++] = vertex.y;
-            verticiesArray[vertexPointer++] = vertex.z;
+            verticesArray[vertexPointer++] = vertex.x;
+            verticesArray[vertexPointer++] = vertex.y;
+            verticesArray[vertexPointer++] = vertex.z;
         }
 
         for (int i = 0; i < indices.size(); i++) {
-            indiciesArray[i] = indices.get(i);
+            indicesArray[i] = indices.get(i);
         }
 
         Material material = new Material();
         Mesh mesh;
+
         if (this.textures.size() > 0) {
-            logger.debug("textureArray cnt: "+textureArray.length);
             material.setTexture(texture);
-            mesh = new Mesh(verticiesArray, normalsArray, textureArray, indiciesArray, material);
+            mesh = new Mesh(verticesArray, normalsArray, textureArray, indicesArray, material);
             mesh.setTexture(this.texture);
         }
         else {
-            mesh = new Mesh(verticiesArray, normalsArray, null, indiciesArray, material);
+            mesh = new Mesh(verticesArray, normalsArray, null, indicesArray, material);
         }
 
         return mesh;
@@ -152,12 +143,15 @@ public class OBJLoader {
     }
 
     private void processVertex(
-            String[] vertexData, List<Integer>indecies,
-            List<Vector2f> textures, List<Vector3f> normals,
-            float[] textureArray, float[] normalsArray) {
+            String[] vertexData,
+            List<Integer>indices,
+            List<Vector2f> textures,
+            List<Vector3f> normals,
+            float[] textureArray,
+            float[] normalsArray) {
 
         int currentVertexPointer = Integer.parseInt(vertexData[0]) -1;
-        indecies.add(currentVertexPointer);
+        indices.add(currentVertexPointer);
 
         if (textures.size() > 0) {
             Vector2f currentTex = textures.get(Integer.parseInt(vertexData[1]) -1);
@@ -167,8 +161,8 @@ public class OBJLoader {
         else{
             textureArray[(currentVertexPointer) * 2] = 1;
             textureArray[(currentVertexPointer) * 2 + 1] = 1;
-
         }
+
         if (normals.size() > 0 ) {
             Vector3f currentNorm = normals.get(Integer.parseInt(vertexData[2]) - 1);
             normalsArray[currentVertexPointer * 3] = currentNorm.x;
@@ -179,8 +173,8 @@ public class OBJLoader {
             normalsArray[(currentVertexPointer) * 3] = 1 ;
             normalsArray[(currentVertexPointer) * 3 + 1] = 1 ;
             normalsArray[(currentVertexPointer) * 3 + 2] = 1;
-
         }
+
     }
 
     public void setTextureArray(List<Vector2f> textureList){
@@ -201,13 +195,13 @@ public class OBJLoader {
 
     /**
      *  see: https://www.khronos.org/opengl/wiki/Calculating_a_Surface_Normal
-     * @param pointsList
-     * @param faceList
-     * @return
+     * @param pointsList ArrayList of vertices.
+     * @param faceList ArrayList of faces in string arrays
+     * @return ArrayList of average normals of each of the faces sharing a common vertex.
      */
     private static ArrayList<Vector3f> createNormals(List<Vector3f> pointsList, List<String[][]> faceList) {
 
-        HashMap<Integer, ArrayList<Vector3f>> vectorNormals = new HashMap<>();
+        SortedMap<Integer, ArrayList<Vector3f>> vectorNormals = new TreeMap<>();
 
         for (String[][] face :
                 faceList) {
@@ -224,38 +218,35 @@ public class OBJLoader {
 
 
             Vector3f normal = new Vector3f();
-            /*
-                Set Normal.x to (multiply U.y by V.z) minus (multiply U.z by V.y)
-            	Set Normal.y to (multiply U.z by V.x) minus (multiply U.x by V.z)
-            	Set Normal.z to (multiply U.x by V.y) minus (multiply U.y by V.x)
-             */
+            /* TODO: Think this can be done by JOML cross function.*/
             normal.x = (u.y * v.z) - (u.z * v.y);
             normal.y = (u.z * v.x) - (u.x * v.z);
             normal.z = (u.x * v.y) - (u.y * v.x);
 
-            if (!vectorNormals.containsKey(i0))
+            if (!vectorNormals.containsKey(i0)){
                 vectorNormals.put(i0, new ArrayList<>());
+            }
             vectorNormals.get(i0).add(normal.normalize());
 
-            if (!vectorNormals.containsKey(i1))
+            if (!vectorNormals.containsKey(i1)){
                 vectorNormals.put(i1, new ArrayList<>());
+            }
             vectorNormals.get(i1).add(normal.normalize());
 
-            if (!vectorNormals.containsKey(i2))
+            if (!vectorNormals.containsKey(i2)){
                 vectorNormals.put(i2, new ArrayList<>());
+            }
             vectorNormals.get(i2).add(normal.normalize());
 
         }
         ArrayList<Vector3f> results = new ArrayList<>();
+
         for (int v3i: vectorNormals.keySet()) {
-
             Vector3f aveVector = new Vector3f(0,0,0);
-
             for ( Vector3f v3x: vectorNormals.get(v3i) ) {
                 aveVector = aveVector.add(v3x);
             }
-            results.add(aveVector.div(vectorNormals.get(v3i).size()).mul(-1.0f) );
-
+            results.add(aveVector.div(vectorNormals.get(v3i).size()) );
         }
         return results;
     }

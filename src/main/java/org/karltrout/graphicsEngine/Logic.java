@@ -9,8 +9,6 @@ import org.karltrout.graphicsEngine.Geodesy.ReferenceEllipsoid;
 import org.karltrout.graphicsEngine.models.*;
 import org.karltrout.graphicsEngine.renderers.AppRenderer;
 import org.karltrout.graphicsEngine.terrains.fltFile.FltFileReader;
-import org.karltrout.graphicsEngine.textures.TextureData;
-import org.lwjgl.opengl.GL11;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -25,7 +23,7 @@ import static org.lwjgl.opengl.GL11.*;
  */
 public class Logic implements ILogic {
 
-    Logger logger = LogManager.getLogger(Logic.class);
+    private Logger logger = LogManager.getLogger(Logic.class);
 
     private final AppRenderer renderer;
     private final Vector3f cameraInc = new Vector3f();
@@ -33,18 +31,15 @@ public class Logic implements ILogic {
     private final Camera camera;
     private ArrayList<Entity> entities = new ArrayList<>();
     private static final float MOUSE_SENSITIVITY = 0.2f;
-    private static final float CAMERA_POS_STEP = 200.0f;
 
     private Vector3f ambientLight;
     private PointLight pointLight;
     private DirectionalLight directionalLight;
-    private float lightAngle;
 
     private static final float scaleFactor = .01f;
-    private int MIN_HEIGHT = 1500;
+    private static final int MIN_HEIGHT = 1500;
     private int ind = 1;
-    private double KILOMETERS_PER_LATITUDE_DEGREE =110.5742727d;
-    private float SPEED_KPH = 1000; // ~.27 km  per seconds...
+    private static final double KILOMETERS_PER_LATITUDE_DEGREE = 110.5742727d;
     private float zoomSpd = 100;
 
     public Logic() throws Exception {
@@ -57,69 +52,58 @@ public class Logic implements ILogic {
 
         renderer.init();
 
-        float reflectance = 1f;
-        //Mesh mesh = OBJLoader.loadMesh("/models/bunny.obj");
-        //Material material = new Material(new Vector3f(0.2f, 0.5f, 0.5f), reflectance);
-
-        //Add Our Entities to OpenGL Memory
-        OBJLoader objLoader = new OBJLoader();
-       /*
-        Mesh bunny = objLoader.loadObjModel("bunny");
-        Entity bunnyEntity = new Entity(bunny);
-        bunnyEntity.setScale(1000.5f);
-        bunnyEntity.setPosition(0.0f,00.00f,1.50f);
-        bunnyEntity.makeWireFrame(false);
-        entities.add(bunnyEntity);
-        */
         //Add Terrain data to OPEN GL
-        Path pathToFltHdr = Paths.get("resources/models/terrainModels/floatn34w112_13.hdr");
-        Path pathToFltFile = Paths.get("resources/models/terrainModels/floatn34w112_13.flt");
-
         try {
-            FltFileReader fltFileReader = FltFileReader.loadFltFile(pathToFltFile, pathToFltHdr);
 
-            Mesh elipsoid =  ReferenceEllipsoid.referenceElipsoidMesh().build();
-
-            Entity planetEarth = new Entity(elipsoid);
+            Mesh ellipsoid =  ReferenceEllipsoid.referenceElipsoidMesh().build();
+            Entity planetEarth = new Entity(ellipsoid);
             planetEarth.setScale(scaleFactor);
             planetEarth.makeWireFrame(false);
-            //planetEarth.setCullFace(GL_FRONT);
             entities.add(planetEarth);
 
-            GeoSpacialTerrainMesh geoTerrainMesh = new GeoSpacialTerrainMesh(fltFileReader.hdr, fltFileReader.fltFile, 1);
+/*
+            Path pathToFltHdr = Paths.get("resources/models/terrainModels/floatn34w113_13.hdr");
+            Path pathToFltFile = Paths.get("resources/models/terrainModels/floatn34w113_13.flt");
+            FltFileReader fltFileReader = FltFileReader.loadFltFile(pathToFltFile, pathToFltHdr);
+            GeoSpacialTerrainMesh geoTerrainMesh = new GeoSpacialTerrainMesh(fltFileReader.hdr, fltFileReader.fltFile, 12);
             Mesh geoMesh = geoTerrainMesh.buildMesh();
             Entity terrainEntity = new Entity(geoMesh);
             terrainEntity.setMaxAltitude(10000);
             terrainEntity.setScale(scaleFactor);
-            terrainEntity.makeWireFrame(true);
-            terrainEntity.setCullFace(GL11.GL_BACK);
-            terrainEntity.setFrontFace(GL11.GL_CW);
+            terrainEntity.makeWireFrame(false);
             entities.add(terrainEntity);
+*/
+            Path pathToFltHdr112 = Paths.get("resources/models/terrainModels/floatn34w112_13.hdr");
+            Path pathToFltFile112 = Paths.get("resources/models/terrainModels/floatn34w112_13.flt");
+            FltFileReader fltFileReader112 = FltFileReader.loadFltFile(pathToFltFile112, pathToFltHdr112);
+            GeoSpacialTerrainMesh geoTerrainMesh112 = new GeoSpacialTerrainMesh(fltFileReader112.hdr, fltFileReader112.fltFile, 12);
+            Mesh geoMesh112 = geoTerrainMesh112.buildMesh();
+            Entity terrainEntity112 = new Entity(geoMesh112);
+            terrainEntity112.setMaxAltitude(10000);
+            terrainEntity112.setScale(scaleFactor);
+            terrainEntity112.makeWireFrame(false);
+            entities.add(terrainEntity112);
 
-
-           // bunnyEntity.setTerrain(geoTerrainMesh);
-          //  bunnyEntity.setPosition(0,0,0);
-
+            // Add 15 degree latitude and longitude  lines
             for (int i = 15; i < 180; i+=15) {
                 int latitude = i - 90;
                 entities.add(new Entity(makeLongitudeLineAt(latitude)));
             }
-
             for (int i = 0; i < 360; i+=15) {
                 int longitude = i - 180;
                 entities.add(new Entity(makeLatitudeLineAt(longitude)));
             }
-            logger.debug("Latitude: "+fltFileReader.hdr.getLatitude());
-            cameraLoc = new Vector3f(fltFileReader.hdr.getLatitude(), fltFileReader.hdr.getLongitude(), 50000.000f);
+
+            //set Camera initial start
+            cameraLoc = new Vector3f(fltFileReader112.hdr.getLatitude()-.5f, fltFileReader112.hdr.getLongitude()+ 0.5f, 500000.000f);
             Vector3f cameraPos = ReferenceEllipsoid.cartesianCoordinates( cameraLoc.x, cameraLoc.y, cameraLoc.z);
             camera.setLocation(cameraLoc);
-            //logger.debug("Camera Altitude : "+camera.getLocation().z);
 
             camera.moveTo(cameraPos.x * scaleFactor ,cameraPos.y * scaleFactor ,cameraPos.z * scaleFactor);
             camera.moveRotation(  -45 + (-1 * cameraLoc.x), 0,   -90 + (-1 * cameraLoc.y) );
 
-            System.out.println("camera Position: "+cameraPos);
-            System.out.println("camera location: "+ camera.getLocation());//ReferenceEllipsoid.geocentricCoordinates(cameraPos.x, cameraPos.y, cameraPos.z).sub(new Vector3f(0,0,ReferenceEllipsoid.fe)));
+            logger.debug("camera Position: "+cameraPos);
+            logger.debug("camera location: "+ camera.getLocation());
 
             ambientLight = new Vector3f(0.2f, 0.2f, 0.2f);
             Vector3f lightColour = new Vector3f(1, 1, 1);
@@ -179,17 +163,9 @@ public class Logic implements ILogic {
 
         if (window.isKeyPressed(GLFW_KEY_A)) {
             cameraInc.y -= travel;
-            /*if (cameraLoc.y > 180 ){
-              //  cameraLoc.y *= -1;
-                prt("y > 180, Inverted y axis.");
-            }*/
             cameraLoc.y -= travel;
         } else if (window.isKeyPressed(GLFW_KEY_D)) {
             cameraInc.y += travel;
-           /* if (cameraLoc.y < -180 ){
-             //   cameraLoc.y *= -1;
-                prt("y < -180, inverted y axis.");
-            }*/
             cameraLoc.y += travel;
         }
 
@@ -201,26 +177,20 @@ public class Logic implements ILogic {
             cameraInc.z += zoomSpd;
             cameraLoc.z += zoomSpd;
         }
-
         adjustCameraSpdBasedOnheight(cameraLoc.z);
-
     }
 
     private void adjustCameraSpdBasedOnheight(float z) {
 
-        if ( z * scaleFactor > 15000 ) zoomSpd = 100000;
-        else if ( z * scaleFactor > 7500 )zoomSpd = 10000;
-        else if( z * scaleFactor > 6000) zoomSpd = 1000;
-        else if( z * scaleFactor > 5000) zoomSpd = 500;
-        else if( z * scaleFactor > 3000) zoomSpd = 400;
-        else if( z * scaleFactor > 2000) zoomSpd = 300;
-        else if( z * scaleFactor > 1000) zoomSpd = 200;
+        if     ( z * scaleFactor > 15000) zoomSpd = 100000;
+        else if( z * scaleFactor > 10000) zoomSpd = 10000;
+        else if( z * scaleFactor > 6000 ) zoomSpd = 1000;
+        else if( z * scaleFactor > 5000 ) zoomSpd = 500;
+        else if( z * scaleFactor > 3000 ) zoomSpd = 400;
+        else if( z * scaleFactor > 2000 ) zoomSpd = 300;
+        else if( z * scaleFactor > 1000 ) zoomSpd = 200;
         else zoomSpd = 100;
 
-    }
-
-    private void prt(String string) {
-        System.out.println(string);
     }
 
     @Override
@@ -241,22 +211,23 @@ public class Logic implements ILogic {
                     , 0);
         }
 
-
         // Update directional light direction, intensity and colour
-        directionalLight.getDirection().x =  -1;// camera.getPosition().x;
-        directionalLight.getDirection().y =  -1; //camera.getPosition().y;
-           /*  lightAngle += 1.1f;
+        directionalLight.getDirection().x =  -1;
+        directionalLight.getDirection().y =  -1;
+
+        /* Time Based Sunlight may not implement this, this way..
+          lightAngle += 1.1f;
         if (lightAngle > 360 ) lightAngle = 0.0f;
-   if (lightAngle > 90) {
-            directionalLight.setIntensity(0);
-            if (lightAngle >= 360) {
-                lightAngle = -90;
-            }
+        if (lightAngle > 90) {
+        directionalLight.setIntensity(0);
+        if (lightAngle >= 360) {
+        lightAngle = -90;
+        }
         } else if (lightAngle <= -80 || lightAngle >= 80) {
-            float factor = 1 - (float) (Math.abs(lightAngle) - 80) / 10.0f;
-            directionalLight.setIntensity(factor);
-            directionalLight.getColor().y = Math.max(factor, 0.9f);
-            directionalLight.getColor().z = Math.max(factor, 0.5f);
+        float factor = 1 - (float) (Math.abs(lightAngle) - 80) / 10.0f;
+        directionalLight.setIntensity(factor);
+        directionalLight.getColor().y = Math.max(factor, 0.9f);
+        directionalLight.getColor().z = Math.max(factor, 0.5f);
         } else {
 
         directionalLight.setIntensity(1);
@@ -285,11 +256,8 @@ public class Logic implements ILogic {
     public void cleanUp(){
 
         renderer.cleanUp();
-
-        for (Entity entity :
-                entities) {
+        for (Entity entity : entities) {
             entity.getMesh().cleanUp();
-
         }
     }
 
@@ -309,8 +277,7 @@ public class Logic implements ILogic {
                 vertices[vertexPointer++] = vertex.y * scaleFactor;
                 vertices[vertexPointer++] = vertex.z * scaleFactor;
                 if (vertex.x < 1 && vertex.x > -1 && vertex.y < 1 && vertex.y > -1)
-                    System.out.println("Point: "+i+" caused zero x");
-
+                    logger.error("Point: "+i+" caused zero x");
                 verticeColors[vertexColor++] = 1;
                 verticeColors[vertexColor++] = 1;
                 verticeColors[vertexColor++] = 1;

@@ -16,41 +16,41 @@ import java.util.ArrayList;
 
 /**
  * new awesome code.
- * Created by karltrout on 6/2/17.
+ * Created by karl trout on 6/2/17.
  */
 public class GeoSpacialTerrainMesh extends TerrainMesh {
 
+    private static final float GEO_ARC_SECOND_METER_DISTANCE = 30.87f;
+    private static final int GRID_SIZE = 901;
 
-    //public static final int RESOLUTION_FACTOR = 1;
-    public static final float GEO_ARC_SECOND_METER_DISTANCE = 30.87f;
-    public static final int GRID_SIZE = 901;
-
-    // Want to use this instead of hard coding the divisor
-    // static final float GEO_ARC_SECOND_RESOLUTION = 1 / 3;
     private static final int MIN_RESOLUTION = 12 ;
     private final FltFileReader.FltHeader hdr;
-    private int resolution = 1;
-
     private OBJLoader objLoader;
-
-    private Logger logger = LogManager.getLogger(this.getClass());
+    private final Logger logger = LogManager.getLogger(this.getClass());
 
     public GeoSpacialTerrainMesh(FltFileReader.FltHeader hdr, FltFile fltFile, int resolution){
 
+        /* TODO this needs to be refactored into better init functions.
+         * TODO function javadoc... what the hell */
         this.objLoader = new OBJLoader();
         this.hdr = hdr;
-        this.resolution = (resolution > MIN_RESOLUTION ) ? MIN_RESOLUTION: resolution;
+        int resolution1 = (resolution > MIN_RESOLUTION) ? MIN_RESOLUTION : resolution;
 
         /* Texture information */
-        String planetImg = "src/resources/34w112_tan.png";
+        /*TODO this needs to be set for each different terrain mesh*/
+        String planetImg = "src/resources/34w112.png";
         TextureData textureData = OpenGLLoader.decodeTextureFile(planetImg);
 
-        ArrayList<Vector2f> textureIndices = new ArrayList<>();
-        for (int i = 0; i <= GRID_SIZE; i++) {
+        /*TODO get this from the image or somewhere*/
+        float width = 300f/385f;
 
-            float y = (i == 0)? i : ((i * resolution) / hdr.nrows);
-            for (int j = 0; j <=  GRID_SIZE; j++) {
-                float x = (j == 0) ? j : (j * resolution / hdr.ncols);
+        ArrayList<Vector2f> textureIndices = new ArrayList<>();
+        for (float i = 0; i < GRID_SIZE; i++) {
+
+            float y = (i == 0)? i : (i / GRID_SIZE);
+            for (float j = 0; j <  GRID_SIZE; j++) {
+                float x = (j == 0) ? j : ( j / GRID_SIZE) * width;
+                logger.debug("X: "+ x+" , Y: "+y);
                 textureIndices.add(new Vector2f(x, y));
             }
         }
@@ -71,15 +71,16 @@ public class GeoSpacialTerrainMesh extends TerrainMesh {
         int rowLength = GRID_SIZE;
         ArrayList<Vector3f> vertices = new ArrayList<>();
         for (int z = 0; z < colLength ; z++ ) {
+            // TODO is this still right?
             // read in the first x rows and first x cols(for now)
             // Points are fltFile height by hdr.cellsize width and length ( a square )
-            int xResolution = 0;
-            int zResolution = 0;
-            Vector3f vector3f = null;
-            double latitudeDegrees = ( z > 0 ) ? (hdr.getLatitude() - (double)(z * resolution) / hdr.nrows ): hdr.getLatitude();
-            double longitudeDegrees = 0;
+            int xResolution;
+            int zResolution;
+            Vector3f vector3f;
+            double latitudeDegrees = ( z > 0 ) ? (hdr.getLatitude() - (double)(z * resolution1) / hdr.nrows ): hdr.getLatitude();
+            double longitudeDegrees;
             for ( int x = 0 ; x < rowLength; x++ ){
-                 longitudeDegrees = (x > 0) ? hdr.getLongitude() + ((double)( x * resolution) / hdr.ncols ) : hdr.getLongitude();
+                 longitudeDegrees = (x > 0) ? hdr.getLongitude() + ((double)( x * resolution1) / hdr.ncols ) : hdr.getLongitude();
                  xResolution = x * resolution;
                  zResolution = z * resolution;
                  vector3f = ReferenceEllipsoid.cartesianCoordinates(latitudeDegrees,longitudeDegrees, fltFile.data[zResolution][xResolution] * 10);
@@ -91,16 +92,15 @@ public class GeoSpacialTerrainMesh extends TerrainMesh {
         objLoader.setVertices(vertices);
 
         logger.debug("Number of mesh Points: "+ vertices.size());
-        // faces
-        //The Original loader takes data from a text file...
+        // Faces, The Original loader takes data from a text file...
         ArrayList<String[][]>faceList = new ArrayList<>();
 
         for (int x = 0; x < rowLength -1 ; x++) {
             for (int z = 1; z < colLength  ; z++) {
 
                 int tl = x * rowLength + z; // top-left
-                int bl = x * rowLength + z + 1; // bottom-left
-                int tr = (x + 1) * rowLength + z; // top-right
+                int tr = x * rowLength + z + 1; // top-right
+                int bl = (x + 1) * rowLength + z; // bottom-left
                 int br = (x + 1) * rowLength + z + 1; // bottom-right
 
                 String[][] faceVector = new String[3][3];
@@ -137,7 +137,7 @@ public class GeoSpacialTerrainMesh extends TerrainMesh {
 
         objLoader.setFaces(faceList);
         logger.debug("Number of Faces: "+faceList.size());
-        logger.debug("Calculating Normals");
+
         objLoader.calculateNormals();
     }
 
@@ -149,8 +149,8 @@ public class GeoSpacialTerrainMesh extends TerrainMesh {
         return objLoader.build();
     }
 
-
     public Vector3f getWorldPosition(Vector2f latlong) {
+        logger.debug("getting World position.");
         Vector3f results = new Vector3f(0,0,0);
         float latDelta = hdr.getLatitude() - latlong.x;
         float longDelta = hdr.getLongitude() - latlong.y;
