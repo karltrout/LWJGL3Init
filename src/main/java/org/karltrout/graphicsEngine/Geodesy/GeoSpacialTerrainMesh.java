@@ -50,11 +50,10 @@ public class GeoSpacialTerrainMesh extends TerrainMesh {
             float y = (i == 0)? i : (i / GRID_SIZE);
             for (float j = 0; j <  GRID_SIZE; j++) {
                 float x = (j == 0) ? j : ( j / GRID_SIZE) * width;
-                logger.debug("X: "+ x+" , Y: "+y);
                 textureIndices.add(new Vector2f(x, y));
             }
         }
-        logger.debug(" 34w112 texture point array Size: "+textureIndices.size());
+        logger.debug("Texture point array size: "+textureIndices.size());
         objLoader.setTextureArray(textureIndices);
         objLoader.setTexture(textureData);
         /* Done with Texture */
