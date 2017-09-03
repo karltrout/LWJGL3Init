@@ -34,7 +34,7 @@ public class GeoSpacialTerrainMeshTest {
     public void buildMesh() throws Exception {
 
         Assert.assertNotNull(fltFileReader);
-        GeoSpacialTerrainMesh geoTerrainMesh = new GeoSpacialTerrainMesh(fltFileReader.hdr, fltFileReader.fltFile, 12);
+        GeoSpacialTerrainMesh geoTerrainMesh = new GeoSpacialTerrainMesh(fltFileReader.hdr, fltFileReader.fltFile,"34w112.png", 12);
         //Mesh geoMesh = geoTerrainMesh.buildMesh();
         Assert.assertNotNull(geoTerrainMesh);
     }

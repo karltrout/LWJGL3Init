@@ -61,25 +61,31 @@ public class Logic implements ILogic {
             planetEarth.makeWireFrame(false);
             entities.add(planetEarth);
 
-/*
+
             Path pathToFltHdr = Paths.get("resources/models/terrainModels/floatn34w113_13.hdr");
             Path pathToFltFile = Paths.get("resources/models/terrainModels/floatn34w113_13.flt");
             FltFileReader fltFileReader = FltFileReader.loadFltFile(pathToFltFile, pathToFltHdr);
-            GeoSpacialTerrainMesh geoTerrainMesh = new GeoSpacialTerrainMesh(fltFileReader.hdr, fltFileReader.fltFile, 12);
+            GeoSpacialTerrainMesh geoTerrainMesh = new GeoSpacialTerrainMesh(fltFileReader.hdr, fltFileReader.fltFile,"34w113.png", 12);
             Mesh geoMesh = geoTerrainMesh.buildMesh();
             Entity terrainEntity = new Entity(geoMesh);
-            terrainEntity.setMaxAltitude(10000);
+            fltFileReader = null;
+            geoTerrainMesh = null;
+            terrainEntity.setMaxAltitude(15000);
             terrainEntity.setScale(scaleFactor);
             terrainEntity.makeWireFrame(false);
             entities.add(terrainEntity);
-*/
+
             Path pathToFltHdr112 = Paths.get("resources/models/terrainModels/floatn34w112_13.hdr");
             Path pathToFltFile112 = Paths.get("resources/models/terrainModels/floatn34w112_13.flt");
             FltFileReader fltFileReader112 = FltFileReader.loadFltFile(pathToFltFile112, pathToFltHdr112);
-            GeoSpacialTerrainMesh geoTerrainMesh112 = new GeoSpacialTerrainMesh(fltFileReader112.hdr, fltFileReader112.fltFile, 12);
+            GeoSpacialTerrainMesh geoTerrainMesh112 = new GeoSpacialTerrainMesh(fltFileReader112.hdr, fltFileReader112.fltFile,"34w112.png", 12);
             Mesh geoMesh112 = geoTerrainMesh112.buildMesh();
+            float hdrLat = fltFileReader112.hdr.getLatitude();
+            float hdrLong = fltFileReader112.hdr.getLongitude();
+            fltFileReader112 = null;
+            geoTerrainMesh112 = null;
             Entity terrainEntity112 = new Entity(geoMesh112);
-            terrainEntity112.setMaxAltitude(10000);
+            terrainEntity112.setMaxAltitude(15000);
             terrainEntity112.setScale(scaleFactor);
             terrainEntity112.makeWireFrame(false);
             entities.add(terrainEntity112);
@@ -95,7 +101,7 @@ public class Logic implements ILogic {
             }
 
             //set Camera initial start
-            cameraLoc = new Vector3f(fltFileReader112.hdr.getLatitude()-.5f, fltFileReader112.hdr.getLongitude()+ 0.5f, 500000.000f);
+            cameraLoc = new Vector3f(hdrLat - .5f, hdrLong , 50000.000f);
             Vector3f cameraPos = ReferenceEllipsoid.cartesianCoordinates( cameraLoc.x, cameraLoc.y, cameraLoc.z);
             camera.setLocation(cameraLoc);
 
