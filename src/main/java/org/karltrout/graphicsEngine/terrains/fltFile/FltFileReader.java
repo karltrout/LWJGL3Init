@@ -69,23 +69,20 @@ public class FltFileReader {
         FltHeader header = null;
         logger = LogManager.getLogger();
 
-        if (hdrFile.exists() && hdrFile.canRead()){
+        logger.info("Importing .hdr file : "+ hdrFile.getName());
 
-            logger.info("Importing .hdr file : "+ hdrFile.getName());
+        FltHeader.Builder fltBuilder = new FltHeader.Builder();
 
-            FltHeader.Builder fltBuilder = new FltHeader.Builder();
-
-            try(Stream<String> hdrLines = Files.lines(pathToFltHdrFile)){
-                hdrLines.forEach( line -> { fltBuilder.add(line); } );
-            } catch (IOException e) {
-                logger.error("HDR File is not readable or exists at: "+hdrFile.getAbsolutePath());
-                throw e;
-            }
-
-            header = fltBuilder.build();
-            logger.info("hdr loaded: "+header.toString());
-
+        try(Stream<String> hdrLines = Files.lines(pathToFltHdrFile)){
+            hdrLines.forEach( line -> { fltBuilder.add(line); } );
+        } catch (IOException e) {
+            logger.error("HDR File is not readable or exists at: "+hdrFile.getAbsolutePath());
+            throw e;
         }
+
+        header = fltBuilder.build();
+        logger.info("hdr loaded: "+header.toString());
+
 
         if (fltFile.exists() && fltFile.canRead()){
 

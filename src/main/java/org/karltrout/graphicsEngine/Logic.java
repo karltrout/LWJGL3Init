@@ -62,10 +62,10 @@ public class Logic implements ILogic {
             entities.add(planetEarth);
 
 
-            Path pathToFltHdr = Paths.get("resources/models/terrainModels/floatn34w113_13.hdr");
-            Path pathToFltFile = Paths.get("resources/models/terrainModels/floatn34w113_13.flt");
+            Path pathToFltHdr = Paths.get("resources/models/terrainModels/n34w113.hdr");
+            Path pathToFltFile = Paths.get("resources/models/terrainModels/n34w113.flt");
             FltFileReader fltFileReader = FltFileReader.loadFltFile(pathToFltFile, pathToFltHdr);
-            GeoSpacialTerrainMesh geoTerrainMesh = new GeoSpacialTerrainMesh(fltFileReader.hdr, fltFileReader.fltFile,"34w113.png", 12);
+            GeoSpacialTerrainMesh geoTerrainMesh = new GeoSpacialTerrainMesh(fltFileReader.hdr, fltFileReader.fltFile,"n34w113.png", 12);
             Mesh geoMesh = geoTerrainMesh.buildMesh();
             Entity terrainEntity = new Entity(geoMesh);
             fltFileReader = null;
@@ -75,10 +75,10 @@ public class Logic implements ILogic {
             terrainEntity.makeWireFrame(false);
             entities.add(terrainEntity);
 
-            Path pathToFltHdr112 = Paths.get("resources/models/terrainModels/floatn34w112_13.hdr");
-            Path pathToFltFile112 = Paths.get("resources/models/terrainModels/floatn34w112_13.flt");
+            Path pathToFltHdr112 = Paths.get("resources/models/terrainModels/n34w112.hdr");
+            Path pathToFltFile112 = Paths.get("resources/models/terrainModels/n34w112.flt");
             FltFileReader fltFileReader112 = FltFileReader.loadFltFile(pathToFltFile112, pathToFltHdr112);
-            GeoSpacialTerrainMesh geoTerrainMesh112 = new GeoSpacialTerrainMesh(fltFileReader112.hdr, fltFileReader112.fltFile,"34w112.png", 12);
+            GeoSpacialTerrainMesh geoTerrainMesh112 = new GeoSpacialTerrainMesh(fltFileReader112.hdr, fltFileReader112.fltFile,"n34w112.png", 12);
             Mesh geoMesh112 = geoTerrainMesh112.buildMesh();
             float hdrLat = fltFileReader112.hdr.getLatitude();
             float hdrLong = fltFileReader112.hdr.getLongitude();

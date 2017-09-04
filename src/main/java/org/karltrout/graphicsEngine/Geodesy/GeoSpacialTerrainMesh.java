@@ -25,7 +25,7 @@ import java.util.ArrayList;
 public class GeoSpacialTerrainMesh extends TerrainMesh {
 
     private static final float GEO_ARC_SECOND_METER_DISTANCE = 30.87f;
-    private static final int GRID_SIZE = 901;
+    private static final int GRID_SIZE = 301;
 
     private static final int MIN_RESOLUTION = 12 ;
     private final FltFileReader.FltHeader hdr;
