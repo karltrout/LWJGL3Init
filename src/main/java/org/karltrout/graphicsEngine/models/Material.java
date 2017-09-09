@@ -4,6 +4,7 @@ import org.joml.Vector4f;
 import org.karltrout.graphicsEngine.textures.TextureData;
 
 /**
+ * Keep information on Materials.
  * Created by karltrout on 8/24/17.
  */
 public class Material {
@@ -17,33 +18,33 @@ public class Material {
 
     private float reflectance;
 
-    private TextureData texture;
+    private boolean texture;
 
     public Material() {
         this.ambientColour = DEFAULT_COLOUR;
         this.diffuseColour = DEFAULT_COLOUR;
         this.specularColour = DEFAULT_COLOUR;
-        this.texture = null;
+        this.texture = false;
         this.reflectance = 0;
     }
 
     public Material(Vector4f colour, float reflectance) {
-        this(colour, colour, colour, null, reflectance);
+        this(colour, colour, colour, false, reflectance);
     }
 
     public Material(TextureData texture) {
-        this(DEFAULT_COLOUR, DEFAULT_COLOUR, DEFAULT_COLOUR, texture, 0);
+        this(DEFAULT_COLOUR, DEFAULT_COLOUR, DEFAULT_COLOUR, false, 0);
     }
 
     public Material(TextureData texture, float reflectance) {
-        this(DEFAULT_COLOUR, DEFAULT_COLOUR, DEFAULT_COLOUR, texture, reflectance);
+        this(DEFAULT_COLOUR, DEFAULT_COLOUR, DEFAULT_COLOUR, false, reflectance);
     }
 
-    public Material(Vector4f ambientColour, Vector4f diffuseColour, Vector4f specularColour, TextureData texture, float reflectance) {
+    private Material(Vector4f ambientColour, Vector4f diffuseColour, Vector4f specularColour, boolean isTexture, float reflectance) {
         this.ambientColour = ambientColour;
         this.diffuseColour = diffuseColour;
         this.specularColour = specularColour;
-        this.texture = texture;
+        this.texture = isTexture;
         this.reflectance = reflectance;
     }
 
@@ -80,14 +81,10 @@ public class Material {
     }
 
     public boolean isTextured() {
-        return this.texture != null;
+        return this.texture;
     }
 
-    public TextureData getTexture() {
-        return texture;
-    }
-
-    public void setTexture(TextureData texture) {
+    public void setTexture(boolean texture) {
         this.texture = texture;
     }
 }

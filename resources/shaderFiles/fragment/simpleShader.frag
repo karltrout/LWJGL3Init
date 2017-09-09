@@ -56,9 +56,13 @@ void setupColours(Material material, vec2 textCoord)
 {
 if (material.hasTexture == 1)
     {
+
         ambientC = texture(texture_sampler, textCoord);
         diffuseC = ambientC;
         speculrC = ambientC;
+
+        if (ambientC.rgb == vec3(0.0,0.0,0.0))
+              discard;
     }
     else
     {

@@ -8,6 +8,7 @@ import org.karltrout.graphicsEngine.Geodesy.GeoSpacialTerrainMesh;
 import org.karltrout.graphicsEngine.Geodesy.ReferenceEllipsoid;
 import org.karltrout.graphicsEngine.models.*;
 import org.karltrout.graphicsEngine.renderers.AppRenderer;
+import org.karltrout.graphicsEngine.shapeFiles.ShapeFileTerrainMesh;
 import org.karltrout.graphicsEngine.terrains.fltFile.FltFileReader;
 
 import java.nio.file.Path;
@@ -41,6 +42,7 @@ public class Logic implements ILogic {
     private int ind = 1;
     private static final double KILOMETERS_PER_LATITUDE_DEGREE = 110.5742727d;
     private float zoomSpd = 100;
+    private float spdMultiplyer = 2.0f;
 
     public Logic() throws Exception {
         camera = new Camera();
@@ -61,15 +63,12 @@ public class Logic implements ILogic {
             planetEarth.makeWireFrame(false);
             entities.add(planetEarth);
 
-
             Path pathToFltHdr = Paths.get("resources/models/terrainModels/n34w113.hdr");
             Path pathToFltFile = Paths.get("resources/models/terrainModels/n34w113.flt");
             FltFileReader fltFileReader = FltFileReader.loadFltFile(pathToFltFile, pathToFltHdr);
             GeoSpacialTerrainMesh geoTerrainMesh = new GeoSpacialTerrainMesh(fltFileReader.hdr, fltFileReader.fltFile,"n34w113.png", 12);
             Mesh geoMesh = geoTerrainMesh.buildMesh();
             Entity terrainEntity = new Entity(geoMesh);
-            fltFileReader = null;
-            geoTerrainMesh = null;
             terrainEntity.setMaxAltitude(15000);
             terrainEntity.setScale(scaleFactor);
             terrainEntity.makeWireFrame(false);
@@ -82,14 +81,48 @@ public class Logic implements ILogic {
             Mesh geoMesh112 = geoTerrainMesh112.buildMesh();
             float hdrLat = fltFileReader112.hdr.getLatitude();
             float hdrLong = fltFileReader112.hdr.getLongitude();
-            fltFileReader112 = null;
-            geoTerrainMesh112 = null;
+
             Entity terrainEntity112 = new Entity(geoMesh112);
             terrainEntity112.setMaxAltitude(15000);
-            terrainEntity112.setScale(scaleFactor);
+            terrainEntity112.setScale(scaleFactor );
             terrainEntity112.makeWireFrame(false);
             entities.add(terrainEntity112);
 
+            ShapeFileTerrainMesh sftm = new ShapeFileTerrainMesh();
+            sftm.addFltFiles(fltFileReader);
+            sftm.addFltFiles(fltFileReader112);
+            //sftm.createHeightMap(scaleFactor);
+            fltFileReader112 = null;
+            geoTerrainMesh112 = null;
+
+            fltFileReader = null;
+            geoTerrainMesh = null;
+
+            Entity kphx = new Entity(sftm.buildMesh());
+            kphx.setScale(scaleFactor);
+            kphx.makeWireFrame(false);
+            entities.add(kphx);
+
+           /* GeoSpacialTerrainMesh geoTerrainMesh112_6 = new GeoSpacialTerrainMesh(fltFileReader112.hdr, fltFileReader112.fltFile,"n34w112.png", 6);
+            Mesh geoMesh112_6 = geoTerrainMesh112_6.buildMesh();
+            //fltFileReader112 = null;
+            geoTerrainMesh112 = null;
+            Entity terrainEntity112_6 = new Entity(geoMesh112_6);
+            terrainEntity112_6.setMaxAltitude(10000);
+            terrainEntity112_6.setScale(scaleFactor);
+            terrainEntity112_6.makeWireFrame(false);
+            entities.add(terrainEntity112_6);
+
+            GeoSpacialTerrainMesh geoTerrainMesh112_12 = new GeoSpacialTerrainMesh(fltFileReader112.hdr, fltFileReader112.fltFile,"n34w112.png", 12);
+            Mesh geoMesh112_12 = geoTerrainMesh112_12.buildMesh();
+            //fltFileReader112 = null;
+            geoTerrainMesh112 = null;
+            Entity terrainEntity112_12 = new Entity(geoMesh112_12);
+            terrainEntity112_12.setMaxAltitude(15000);
+            terrainEntity112_12.setScale(scaleFactor);
+            terrainEntity112_12.makeWireFrame(false);
+            entities.add(terrainEntity112_12);
+*/
             // Add 15 degree latitude and longitude  lines
             for (int i = 15; i < 180; i+=15) {
                 int latitude = i - 90;
@@ -101,12 +134,12 @@ public class Logic implements ILogic {
             }
 
             //set Camera initial start
-            cameraLoc = new Vector3f(hdrLat - .5f, hdrLong , 50000.000f);
+            cameraLoc = new Vector3f(34.0f-.5f , -112.0f , 50000.000f);
             Vector3f cameraPos = ReferenceEllipsoid.cartesianCoordinates( cameraLoc.x, cameraLoc.y, cameraLoc.z);
             camera.setLocation(cameraLoc);
 
             camera.moveTo(cameraPos.x * scaleFactor ,cameraPos.y * scaleFactor ,cameraPos.z * scaleFactor);
-            camera.moveRotation(  -45 + (-1 * cameraLoc.x), 0,   -90 + (-1 * cameraLoc.y) );
+            camera.moveRotation(  -90 + (-1 * cameraLoc.x), 0,   -90 + (-1 * cameraLoc.y) );
 
             logger.debug("camera Position: "+cameraPos);
             logger.debug("camera location: "+ camera.getLocation());
@@ -190,12 +223,12 @@ public class Logic implements ILogic {
 
         if     ( z * scaleFactor > 15000) zoomSpd = 100000;
         else if( z * scaleFactor > 10000) zoomSpd = 10000;
-        else if( z * scaleFactor > 6000 ) zoomSpd = 1000;
-        else if( z * scaleFactor > 5000 ) zoomSpd = 500;
-        else if( z * scaleFactor > 3000 ) zoomSpd = 400;
-        else if( z * scaleFactor > 2000 ) zoomSpd = 300;
-        else if( z * scaleFactor > 1000 ) zoomSpd = 200;
-        else zoomSpd = 100;
+        else if( z * scaleFactor > 6000 ) zoomSpd = 1000 * spdMultiplyer;
+        else if( z * scaleFactor > 5000 ) zoomSpd = 500 * spdMultiplyer;
+        else if( z * scaleFactor > 3000 ) zoomSpd = 400 * spdMultiplyer;
+        else if( z * scaleFactor > 2000 ) zoomSpd = 300 * spdMultiplyer;
+        else if( z * scaleFactor > 1000 ) zoomSpd = 200 * spdMultiplyer;
+        else zoomSpd = 100 * spdMultiplyer ;
 
     }
 

@@ -71,12 +71,13 @@ public class GeoSpacialTerrainMesh extends TerrainMesh {
         TextureData textureData = OpenGLLoader.decodeTextureFile(planetImg);
 
         /*TODO get this from the image or somewhere*/
-         this.textureWidth = 300f/385f;
+         this.textureWidth = (300f/385f);
 
         ArrayList<Vector2f> textureIndices = createTextureIndicesList();
         logger.debug("Number of Texture Points: "+textureIndices.size());
         objLoader.setTextureArray(textureIndices);
         objLoader.setTexture(textureData);
+
         /* Done with Texture */
 
         ArrayList<Vector3f> vertices = createVerticesList();
@@ -169,11 +170,12 @@ public class GeoSpacialTerrainMesh extends TerrainMesh {
 
     private ArrayList<Vector2f> createTextureIndicesList() {
         ArrayList<Vector2f> textureIndices = new ArrayList<>();
+        float texResolution = resolution/MIN_RESOLUTION;
         for (float i = 0; i < GRID_SIZE; i++) {
 
-            float y = (i == 0)? i : (i / GRID_SIZE) * this.textureHeight;
+            float y = (i == 0)? i : (i / GRID_SIZE) * this.textureHeight * texResolution;
             for (float j = 0; j <  GRID_SIZE; j++) {
-                float x = (j == 0) ? j : ( j / GRID_SIZE) * this.textureWidth;
+                float x = (j == 0) ? j : ( j / GRID_SIZE) * this.textureWidth * texResolution;
                 textureIndices.add(new Vector2f(x, y));
             }
         }

@@ -5,9 +5,9 @@ import org.lwjgl.system.MemoryUtil;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
-import java.util.Deque;
 
 import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL13.GL_TEXTURE1;
 import static org.lwjgl.opengl.GL13.glActiveTexture;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL15.GL_ARRAY_BUFFER;
@@ -40,8 +40,8 @@ public class Mesh implements Renderable {
     private int idxVboId;
     private int normalsVboId;
     private int texVboId;
-    private Deque<Object> vboIdList;
     private Material material;
+    private TextureData detailTexture;
 
 
     public Mesh(float[] vertices, float[] normals, float[] textureData, int[] indices, Material material) {
@@ -77,6 +77,7 @@ public class Mesh implements Renderable {
         glBindBuffer(GL_ARRAY_BUFFER, vertexVboId);
         glBufferData(GL_ARRAY_BUFFER, verticesBuffer, GL_STATIC_DRAW);
         memFree(verticesBuffer);
+        vertices = null;
 
         // Define Vertex Buffer Data to the shaders as an attribute.
         glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0);
@@ -91,6 +92,7 @@ public class Mesh implements Renderable {
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesBuffer, GL_STATIC_DRAW);
         //free the non jvm memory
         memFree(indicesBuffer);
+        indices = null;
 
         // texture VBO
         if(texCoords != null) {
@@ -102,6 +104,7 @@ public class Mesh implements Renderable {
             memFree(textCoordsBuffer);
             glVertexAttribPointer(1, 2, GL_FLOAT, false, 0, 0);
 
+            texCoords = null;
         }
 
         //NORMALS VBO
@@ -114,6 +117,7 @@ public class Mesh implements Renderable {
             memFree(normalsBuffer);
             glVertexAttribPointer(2, 3, GL_FLOAT, false, 0, 0);
 
+            normalIndices = null;
         }
 
         //unbind the VAO
@@ -140,6 +144,9 @@ public class Mesh implements Renderable {
         if(texture != null)
             glDeleteBuffers(texture.getId());
 
+        if(detailTexture != null)
+            glDeleteBuffers(detailTexture.getId());
+
         glDeleteBuffers(normalsVboId);
         // Delete the VAO
         glBindVertexArray(0);
@@ -155,6 +162,14 @@ public class Mesh implements Renderable {
             // Bind the texture
             glBindTexture(GL_TEXTURE_2D, texture.getId());
         }
+
+        if (detailTexture != null) {
+            // Activate detail texture unit
+            glActiveTexture(GL_TEXTURE1);
+            // Bind the texture
+            glBindTexture(GL_TEXTURE_2D, detailTexture.getId());
+        }
+
         // Bind to the VAO
         glBindVertexArray(vaoId);
         glEnableVertexAttribArray(0);
@@ -187,5 +202,9 @@ public class Mesh implements Renderable {
     public void setTexture(TextureData texture)
     {
         this.texture = texture;
+    }
+
+    public void setDetailTexture(TextureData detailTexture) {
+        this.detailTexture = detailTexture;
     }
 }

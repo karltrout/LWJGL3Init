@@ -36,6 +36,8 @@
     <orderEntry type="library" name="Maven: org.geotools:gt-epsg-hsql:17.1" level="project" />
     <orderEntry type="library" name="Maven: org.hsqldb:hsqldb:2.3.0" level="project" />
     <orderEntry type="library" name="Maven: org.geotools:gt-epsg-extension:17.1" level="project" />
+    <orderEntry type="library" name="Maven: org.geotools:gt-shapefile:17.1" level="project" />
+    <orderEntry type="library" name="Maven: org.geotools:gt-data:17.1" level="project" />
     <orderEntry type="library" name="Maven: org.lwjgl:lwjgl:3.1.2" level="project" />
     <orderEntry type="library" name="Maven: org.lwjgl:lwjgl-assimp:3.1.2" level="project" />
     <orderEntry type="library" name="Maven: org.lwjgl:lwjgl-bgfx:3.1.2" level="project" />

@@ -30,6 +30,7 @@ public class OBJLoader {
     private List<Integer> indices = new ArrayList<>();
     private List<String[][]> faces = new ArrayList<>();
     private TextureData texture;
+    private TextureData detailTexture;
 
     private final Logger logger = LogManager.getLogger(this.getClass());
 
@@ -130,9 +131,10 @@ public class OBJLoader {
         Mesh mesh;
 
         if (this.textures.size() > 0) {
-            material.setTexture(texture);
+            material.setTexture(true);
             mesh = new Mesh(verticesArray, normalsArray, textureArray, indicesArray, material);
             mesh.setTexture(this.texture);
+            mesh.setDetailTexture(this.detailTexture);
         }
         else {
             mesh = new Mesh(verticesArray, normalsArray, null, indicesArray, material);
@@ -183,6 +185,10 @@ public class OBJLoader {
 
     public void setTexture(TextureData texture) {
         this.texture = texture;
+    }
+
+    public void setDetailTexture(TextureData texture) {
+        this.detailTexture = texture;
     }
 
     public void setNormals(List<Vector3f> normals) {

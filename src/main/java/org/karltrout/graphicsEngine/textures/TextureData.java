@@ -35,6 +35,7 @@ public class TextureData {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width,
                 height, 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
 
+        buffer = null;
         System.out.println("Texture Binding Complete.");
 
     }
@@ -47,9 +48,9 @@ public class TextureData {
         return height;
     }
 
-    public ByteBuffer getBuffer(){
-        return buffer;
-    }
+    //public ByteBuffer getBuffer(){
+    //    return buffer;
+    //}
 
     public int getId(){
         return this.textureId;

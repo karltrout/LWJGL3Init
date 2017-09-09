@@ -3,7 +3,7 @@ package org.karltrout.graphicsEngine.terrains.fltFile;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
+import org.geotools.resources.geometry.XRectangle2D;
 
 import java.io.*;
 import java.nio.ByteBuffer;
@@ -20,15 +20,11 @@ import java.util.stream.Stream;
  */
 public class FltFileReader {
 
-    public static final float GEO_ARC_SECOND_METER_DISTANCE = 30.87f;
-    public static final int GRID_SIZE_METERS = 901;
-
     private static Logger logger;
     public FltFile fltFile;
     public FltHeader hdr;
-    private byte[] buffer;
 
-    FltFileReader(File file, FltHeader hdr) throws FileNotFoundException {
+    private FltFileReader(File file, FltHeader hdr) throws FileNotFoundException {
 
         this.hdr = hdr;
 
@@ -36,7 +32,7 @@ public class FltFileReader {
 
         if (file != null && file.exists() && file.canRead()) {
             this.fltFile = new FltFile(hdr.nrows, hdr.ncols);
-            buffer = new byte[hdr.ncols * 4]; // read in one row at a time
+            byte[] buffer = new byte[hdr.ncols * 4];
             int row = 0;
             try (InputStream input = new BufferedInputStream(new FileInputStream(file))) {
 
@@ -51,13 +47,18 @@ public class FltFileReader {
                     }
                     row++;
                 }
-                logger.debug("Number of Rows: " + row);
+                logger.debug("Number of Rows in FltFile "+file.getName()+" : " + row);
+                this.hdr.createLookupTable();
+
+
             } catch (IOException e) {
                 logger.error("Error reading file: " + file.getAbsolutePath());
                 e.printStackTrace();
             }
         } else {
-            logger.error("Flt File " + file.getAbsolutePath() + " can not be read.");
+            if (file != null) {
+                logger.error("Flt File " + file.getAbsolutePath() + " can not be read.");
+            }
         }
     }
 
@@ -66,7 +67,7 @@ public class FltFileReader {
         File fltFile = pathToFltFile.toFile();
         File hdrFile = pathToFltHdrFile.toFile();
         FltFileReader reader = null;
-        FltHeader header = null;
+        FltHeader header;
         logger = LogManager.getLogger();
 
         logger.info("Importing .hdr file : "+ hdrFile.getName());
@@ -74,7 +75,7 @@ public class FltFileReader {
         FltHeader.Builder fltBuilder = new FltHeader.Builder();
 
         try(Stream<String> hdrLines = Files.lines(pathToFltHdrFile)){
-            hdrLines.forEach( line -> { fltBuilder.add(line); } );
+            hdrLines.forEach(fltBuilder::add);
         } catch (IOException e) {
             logger.error("HDR File is not readable or exists at: "+hdrFile.getAbsolutePath());
             throw e;
@@ -102,6 +103,9 @@ public class FltFileReader {
 
     }
 
+    public float getHeightAt(float latitude, float longitude) {
+        return 0;
+    }
 
 
     public final static class FltHeader {
@@ -126,7 +130,11 @@ public class FltFileReader {
         final int noDataVal;
         final String byteOrder;
 
-        public FltHeader(int cols, int rows, float xllcorner, float yllcorner, Double cellsize, int noDataVal, String byteOrder) {
+        private XRectangle2D boundingBox;
+        private double[] latitudeArray;
+        private double[] longitudeArray;
+
+        FltHeader(int cols, int rows, float xllcorner, float yllcorner, Double cellsize, int noDataVal, String byteOrder) {
 
             this.ncols = cols;
             this.nrows = rows;
@@ -135,6 +143,8 @@ public class FltFileReader {
             this.byteOrder = byteOrder;
             this.cellsize = cellsize;
             this.noDataVal = noDataVal;
+
+            this.boundingBox = XRectangle2D.createFromExtremums( yllcorner,xllcorner, yllcorner + 1, xllcorner+1);
 
         }
 
@@ -149,6 +159,36 @@ public class FltFileReader {
         public String toString(){
             return "FltHeader -> Cols:"+ncols+" Rows:"+nrows+" X:"+xllcorner+
                     " Y:"+yllcorner+" Cell Size:"+cellsize+" NoData: "+noDataVal+" Byte Order:"+byteOrder;
+        }
+
+        public XRectangle2D getBoundingBox() {
+            return boundingBox;
+        }
+
+        private void createLookupTable() {
+            this.latitudeArray = new double[this.nrows];
+            this.longitudeArray = new double[this.ncols];
+            for (int row = 0; row < this.nrows ; row++ ) {
+                double latitudeDegrees = (row > 0) ? (this.getLatitude() - (double) (row) / this.nrows) : this.getLatitude();
+                latitudeArray[row] = latitudeDegrees;
+            }
+
+            for ( int col = 0 ; col < this.ncols; col++ ){
+                double longitudeDegrees = (col > 0) ? this.getLongitude() + ((double)col / this.ncols ) : this.getLongitude();
+
+                longitudeArray[col] = longitudeDegrees;
+            }
+
+            logger.debug("number of lookup rows: "+latitudeArray.length+" lookup Columns: "+longitudeArray.length);
+
+        }
+
+        public double[] getLongitudeArray() {
+            return longitudeArray;
+        }
+
+        public double[] getLatitudeArray() {
+            return latitudeArray;
         }
 
         static class Builder {
