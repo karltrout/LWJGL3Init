@@ -10,6 +10,8 @@ import org.karltrout.graphicsEngine.models.*;
 import org.karltrout.graphicsEngine.renderers.AppRenderer;
 import org.karltrout.graphicsEngine.shapeFiles.ShapeFileTerrainMesh;
 import org.karltrout.graphicsEngine.terrains.fltFile.FltFileReader;
+import org.karltrout.graphicsEngine.textures.TextureData;
+import org.lwjgl.opengl.GL11;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -42,7 +44,7 @@ public class Logic implements ILogic {
     private int ind = 1;
     private static final double KILOMETERS_PER_LATITUDE_DEGREE = 110.5742727d;
     private float zoomSpd = 100;
-    private float spdMultiplyer = 2.0f;
+    private float spdMultiplyer = 4.0f;
 
     public Logic() throws Exception {
         camera = new Camera();
@@ -60,69 +62,66 @@ public class Logic implements ILogic {
             Mesh ellipsoid =  ReferenceEllipsoid.referenceElipsoidMesh().build();
             Entity planetEarth = new Entity(ellipsoid);
             planetEarth.setScale(scaleFactor);
-            planetEarth.makeWireFrame(false);
+            planetEarth.makeWireFrame(true);
+
             entities.add(planetEarth);
 
             Path pathToFltHdr = Paths.get("resources/models/terrainModels/n34w113.hdr");
             Path pathToFltFile = Paths.get("resources/models/terrainModels/n34w113.flt");
             FltFileReader fltFileReader = FltFileReader.loadFltFile(pathToFltFile, pathToFltHdr);
-            GeoSpacialTerrainMesh geoTerrainMesh = new GeoSpacialTerrainMesh(fltFileReader.hdr, fltFileReader.fltFile,"n34w113.png", 12);
+            GeoSpacialTerrainMesh geoTerrainMesh = new GeoSpacialTerrainMesh(fltFileReader.hdr, fltFileReader.fltFile,"n34w113_ls8.png", 12);
             Mesh geoMesh = geoTerrainMesh.buildMesh();
             Entity terrainEntity = new Entity(geoMesh);
             terrainEntity.setMaxAltitude(15000);
             terrainEntity.setScale(scaleFactor);
             terrainEntity.makeWireFrame(false);
             entities.add(terrainEntity);
+            fltFileReader = null;
+            geoTerrainMesh = null;
+
 
             Path pathToFltHdr112 = Paths.get("resources/models/terrainModels/n34w112.hdr");
             Path pathToFltFile112 = Paths.get("resources/models/terrainModels/n34w112.flt");
             FltFileReader fltFileReader112 = FltFileReader.loadFltFile(pathToFltFile112, pathToFltHdr112);
-            GeoSpacialTerrainMesh geoTerrainMesh112 = new GeoSpacialTerrainMesh(fltFileReader112.hdr, fltFileReader112.fltFile,"n34w112.png", 12);
+            GeoSpacialTerrainMesh geoTerrainMesh112 = new GeoSpacialTerrainMesh(fltFileReader112.hdr, fltFileReader112.fltFile,"n34w112_ls8.png", 12);
             Mesh geoMesh112 = geoTerrainMesh112.buildMesh();
-            float hdrLat = fltFileReader112.hdr.getLatitude();
-            float hdrLong = fltFileReader112.hdr.getLongitude();
-
             Entity terrainEntity112 = new Entity(geoMesh112);
             terrainEntity112.setMaxAltitude(15000);
             terrainEntity112.setScale(scaleFactor );
             terrainEntity112.makeWireFrame(false);
             entities.add(terrainEntity112);
-
-            ShapeFileTerrainMesh sftm = new ShapeFileTerrainMesh();
-            sftm.addFltFiles(fltFileReader);
-            sftm.addFltFiles(fltFileReader112);
-            //sftm.createHeightMap(scaleFactor);
             fltFileReader112 = null;
             geoTerrainMesh112 = null;
 
-            fltFileReader = null;
-            geoTerrainMesh = null;
+            OBJLoader objLoader = new OBJLoader();
+            objLoader.loadObjModel("bunny2");
+            String planetImg = "resources/models/bunny2.png";
+            TextureData textureData = OpenGLLoader.decodeTextureFile(planetImg);
 
-            Entity kphx = new Entity(sftm.buildMesh());
-            kphx.setScale(scaleFactor);
-            kphx.makeWireFrame(false);
-            entities.add(kphx);
+            objLoader.setTexture(textureData);
 
-           /* GeoSpacialTerrainMesh geoTerrainMesh112_6 = new GeoSpacialTerrainMesh(fltFileReader112.hdr, fltFileReader112.fltFile,"n34w112.png", 6);
-            Mesh geoMesh112_6 = geoTerrainMesh112_6.buildMesh();
-            //fltFileReader112 = null;
-            geoTerrainMesh112 = null;
-            Entity terrainEntity112_6 = new Entity(geoMesh112_6);
-            terrainEntity112_6.setMaxAltitude(10000);
-            terrainEntity112_6.setScale(scaleFactor);
-            terrainEntity112_6.makeWireFrame(false);
-            entities.add(terrainEntity112_6);
+            Entity bunny = new Entity(objLoader.build());
+            bunny.makeWireFrame(false);
+            //bunny.setCullFace(GL11.GL_FRONT_AND_BACK);
 
-            GeoSpacialTerrainMesh geoTerrainMesh112_12 = new GeoSpacialTerrainMesh(fltFileReader112.hdr, fltFileReader112.fltFile,"n34w112.png", 12);
-            Mesh geoMesh112_12 = geoTerrainMesh112_12.buildMesh();
-            //fltFileReader112 = null;
-            geoTerrainMesh112 = null;
-            Entity terrainEntity112_12 = new Entity(geoMesh112_12);
-            terrainEntity112_12.setMaxAltitude(15000);
-            terrainEntity112_12.setScale(scaleFactor);
-            terrainEntity112_12.makeWireFrame(false);
-            entities.add(terrainEntity112_12);
-*/
+            //bunny.setScale(scaleFactor);
+            Vector3f bunnySpot = ReferenceEllipsoid.cartesianCoordinates(33.5f, -112.00f, 50000.0f).mul(scaleFactor);
+            logger.info("Bunny Position: "+bunnySpot);
+
+            bunny.setPosition(bunnySpot.x , bunnySpot.y, bunnySpot.z );
+
+            entities.add(bunny);
+
+            //ShapeFileTerrainMesh sftm = new ShapeFileTerrainMesh();
+            //sftm.addFltFiles(fltFileReader);
+            //sftm.addFltFiles(fltFileReader112);
+            //sftm.createHeightMap(scaleFactor);
+
+            //Entity kphx = new Entity(sftm.buildMesh());
+            //kphx.setScale(scaleFactor);
+            //kphx.makeWireFrame(false);
+            //entities.add(kphx);
+
             // Add 15 degree latitude and longitude  lines
             for (int i = 15; i < 180; i+=15) {
                 int latitude = i - 90;
@@ -135,13 +134,13 @@ public class Logic implements ILogic {
 
             //set Camera initial start
             cameraLoc = new Vector3f(34.0f-.5f , -112.0f , 50000.000f);
-            Vector3f cameraPos = ReferenceEllipsoid.cartesianCoordinates( cameraLoc.x, cameraLoc.y, cameraLoc.z);
+            Vector3f cameraPos = ReferenceEllipsoid.cartesianCoordinates( cameraLoc.x, cameraLoc.y, cameraLoc.z).mul(scaleFactor);
             camera.setLocation(cameraLoc);
 
-            camera.moveTo(cameraPos.x * scaleFactor ,cameraPos.y * scaleFactor ,cameraPos.z * scaleFactor);
+            camera.moveTo(cameraPos.x  ,cameraPos.y ,cameraPos.z );
             camera.moveRotation(  -90 + (-1 * cameraLoc.x), 0,   -90 + (-1 * cameraLoc.y) );
 
-            logger.debug("camera Position: "+cameraPos);
+            logger.debug("camera Position: "+camera.getPosition());
             logger.debug("camera location: "+ camera.getLocation());
 
             ambientLight = new Vector3f(0.2f, 0.2f, 0.2f);

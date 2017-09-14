@@ -71,7 +71,8 @@ public class GeoSpacialTerrainMesh extends TerrainMesh {
         TextureData textureData = OpenGLLoader.decodeTextureFile(planetImg);
 
         /*TODO get this from the image or somewhere*/
-         this.textureWidth = (300f/385f);
+        // this.textureWidth = (300f/385f);
+
 
         ArrayList<Vector2f> textureIndices = createTextureIndicesList();
         logger.debug("Number of Texture Points: "+textureIndices.size());

@@ -220,7 +220,7 @@ public class ShapeFileTerrainMesh extends TerrainMesh {
                             break;
                         }
                     }
-                    Vector3f pixel = ReferenceEllipsoid.cartesianCoordinates(latitude, longitude, altitude * 10);
+                    Vector3f pixel = ReferenceEllipsoid.cartesianCoordinates(latitude, longitude, altitude );
                     positionMap[y][x] = pixel.mul(scale);
                 }
 

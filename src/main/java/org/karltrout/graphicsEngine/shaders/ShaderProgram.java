@@ -8,6 +8,8 @@ import org.karltrout.graphicsEngine.models.Material;
 import org.karltrout.graphicsEngine.models.PointLight;
 import org.lwjgl.opengl.GL11;
 import org.joml.Vector3f;
+import org.lwjgl.opengl.GL40;
+import org.lwjgl.opengl.GL45;
 import org.lwjgl.system.MemoryStack;
 
 import java.io.BufferedReader;
@@ -141,6 +143,14 @@ public abstract class ShaderProgram {
     protected  void loadFragmentShader(String filePath) throws Exception {
         this.fragmentShaderID = loadShader(filePath, GL_FRAGMENT_SHADER);
     }
+
+    protected void loadTessellationControlShader(String filePath) throws Exception {
+    	loadShader(filePath, GL40.GL_TESS_CONTROL_SHADER);
+	}
+
+	protected void loadTessellationEvalShader(String filePath) throws Exception {
+		loadShader(filePath, GL40.GL_TESS_EVALUATION_SHADER);
+	}
 
 	private static int loadShader(String filePath, int type) throws Exception {
 
