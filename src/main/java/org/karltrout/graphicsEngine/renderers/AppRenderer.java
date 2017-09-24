@@ -11,6 +11,7 @@ import org.karltrout.graphicsEngine.models.DirectionalLight;
 import org.karltrout.graphicsEngine.models.Entity;
 import org.karltrout.graphicsEngine.models.PointLight;
 import org.karltrout.graphicsEngine.shaders.DefaultShader;
+import org.karltrout.graphicsEngine.shaders.HudShader;
 import org.lwjgl.opengl.GL11;
 
 import java.util.logging.LogManager;
@@ -29,6 +30,7 @@ public class AppRenderer {
 
     Logger logger = org.apache.logging.log4j.LogManager.getLogger(AppRenderer.class);
     private DefaultShader appShader;
+    private HudShader hudShader;
     private Camera camera;
 
     private static final float FOV = (float) Math.toRadians(60);
@@ -131,6 +133,7 @@ public class AppRenderer {
     public void init() throws Exception{
 
         appShader = new DefaultShader();
+        //hudShader = new HudShader();
 
         transformation = new Transformation();
 

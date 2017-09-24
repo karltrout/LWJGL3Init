@@ -12,7 +12,12 @@ import org.karltrout.graphicsEngine.shapeFiles.ShapeFileTerrainMesh;
 import org.karltrout.graphicsEngine.terrains.fltFile.FltFileReader;
 import org.karltrout.graphicsEngine.textures.TextureData;
 import org.lwjgl.opengl.GL11;
+import org.newdawn.slick.opengl.Texture;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -94,22 +99,35 @@ public class Logic implements ILogic {
             geoTerrainMesh112 = null;
 
             OBJLoader objLoader = new OBJLoader();
-            objLoader.loadObjModel("bunny2");
-            String planetImg = "resources/models/bunny2.png";
-            TextureData textureData = OpenGLLoader.decodeTextureFile(planetImg);
 
-            objLoader.setTexture(textureData);
+            Path bunnyTexture = Paths.get("resources/models/a380_AIRBUS.png");
+            //URL bunnyTexture = this.getClass().getResource(planetImg.);
+            //File is = bunnyTexture.toFile();
+            FileInputStream fis = new FileInputStream(bunnyTexture.toFile());
+            TextureData textureData = OpenGLLoader.decodeTextureFile(bunnyTexture);
 
-            Entity bunny = new Entity(objLoader.build());
+          //  OpenGLLoader loader = new OpenGLLoader();
+         //   int textureId = loader.loadTexture("bunny3");
+
+            Mesh model = objLoader.loadObjModel("A380",textureData );
+
+           // Material material = new Material();
+           // material.setTexture(true);
+           // Mesh mesh = new Mesh();
+           // mesh.setMaterial(material);
+           // mesh.setTexture(new TextureData(textureId));
+
+            Entity bunny = new Entity(model);
             bunny.makeWireFrame(false);
+
             //bunny.setCullFace(GL11.GL_FRONT_AND_BACK);
 
             //bunny.setScale(scaleFactor);
-            Vector3f bunnySpot = ReferenceEllipsoid.cartesianCoordinates(33.5f, -112.00f, 50000.0f).mul(scaleFactor);
+            Vector3f bunnySpot = ReferenceEllipsoid.cartesianCoordinates(33.507f, -112.00f, 48500.000f).mul(scaleFactor);
             logger.info("Bunny Position: "+bunnySpot);
 
             bunny.setPosition(bunnySpot.x , bunnySpot.y, bunnySpot.z );
-
+            bunny.setRotation( -34, 10,   -10);
             entities.add(bunny);
 
             //ShapeFileTerrainMesh sftm = new ShapeFileTerrainMesh();

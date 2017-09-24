@@ -30,16 +30,16 @@ public class OBJLoader {
     private List<Integer> indices = new ArrayList<>();
     private List<String[][]> faces = new ArrayList<>();
     private TextureData texture;
-    private TextureData detailTexture;
 
     private final Logger logger = LogManager.getLogger(this.getClass());
 
     public OBJLoader(){
     }
 
-    public Mesh loadObjModel(String fileName) throws FileNotFoundException {
+    public Mesh loadObjModel(String fileName, TextureData textureData) throws FileNotFoundException {
 
         logger.debug("Loading Model :"+fileName);
+        this.texture = textureData;
         FileReader reader = new FileReader(new File("resources/models/" + fileName + ".obj"));
         BufferedReader bufferedReader = new BufferedReader(reader);
         try {
@@ -134,7 +134,7 @@ public class OBJLoader {
             material.setTexture(true);
             mesh = new Mesh(verticesArray, normalsArray, textureArray, indicesArray, material);
             mesh.setTexture(this.texture);
-            mesh.setDetailTexture(this.detailTexture);
+           // mesh.setDetailTexture(this.detailTexture);
         }
         else {
             mesh = new Mesh(verticesArray, normalsArray, null, indicesArray, material);
@@ -185,10 +185,6 @@ public class OBJLoader {
 
     public void setTexture(TextureData texture) {
         this.texture = texture;
-    }
-
-    public void setDetailTexture(TextureData texture) {
-        this.detailTexture = texture;
     }
 
     public void setNormals(List<Vector3f> normals) {

@@ -41,7 +41,7 @@ public class Mesh implements Renderable {
     private int normalsVboId;
     private int texVboId;
     private Material material;
-    private TextureData detailTexture;
+    //private TextureData detailTexture;
 
 
     public Mesh(float[] vertices, float[] normals, float[] textureData, int[] indices, Material material) {
@@ -92,6 +92,7 @@ public class Mesh implements Renderable {
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesBuffer, GL_STATIC_DRAW);
         //free the non jvm memory
         memFree(indicesBuffer);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
         indices = null;
 
         // texture VBO
@@ -103,7 +104,7 @@ public class Mesh implements Renderable {
             glBufferData(GL_ARRAY_BUFFER, textCoordsBuffer, GL_STATIC_DRAW);
             memFree(textCoordsBuffer);
             glVertexAttribPointer(1, 2, GL_FLOAT, false, 0, 0);
-
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
             texCoords = null;
         }
 
@@ -117,6 +118,7 @@ public class Mesh implements Renderable {
             memFree(normalsBuffer);
             glVertexAttribPointer(2, 3, GL_FLOAT, false, 0, 0);
 
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
             normalIndices = null;
         }
 
@@ -144,9 +146,6 @@ public class Mesh implements Renderable {
         if(texture != null)
             glDeleteBuffers(texture.getId());
 
-        if(detailTexture != null)
-            glDeleteBuffers(detailTexture.getId());
-
         glDeleteBuffers(normalsVboId);
         // Delete the VAO
         glBindVertexArray(0);
@@ -161,13 +160,6 @@ public class Mesh implements Renderable {
             glActiveTexture(GL_TEXTURE0);
             // Bind the texture
             glBindTexture(GL_TEXTURE_2D, texture.getId());
-        }
-
-        if (detailTexture != null) {
-            // Activate detail texture unit
-            glActiveTexture(GL_TEXTURE1);
-            // Bind the texture
-            glBindTexture(GL_TEXTURE_2D, detailTexture.getId());
         }
 
         // Bind to the VAO
@@ -204,7 +196,4 @@ public class Mesh implements Renderable {
         this.texture = texture;
     }
 
-    public void setDetailTexture(TextureData detailTexture) {
-        this.detailTexture = detailTexture;
-    }
 }

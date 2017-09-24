@@ -4,17 +4,27 @@ import org.karltrout.graphicsEngine.models.RawModel;
 import org.karltrout.graphicsEngine.textures.TextureData;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.*;
+import org.lwjgl.system.MemoryStack;
 import org.newdawn.slick.opengl.PNGDecoder;
 import org.newdawn.slick.opengl.Texture;
 import org.newdawn.slick.opengl.TextureLoader;
 
-import java.io.FileInputStream;
-import java.io.IOException;
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.lwjgl.stb.STBImage.stbi_failure_reason;
+import static org.lwjgl.stb.STBImage.stbi_load;
+import static org.lwjgl.stb.STBImage.stbi_set_flip_vertically_on_load;
+import static org.lwjgl.system.MemoryStack.stackPush;
 
 public class OpenGLLoader {
 	
@@ -83,11 +93,11 @@ public class OpenGLLoader {
 
 	public int loadTexture(String fileName){
 
-	    Texture texture = null;
+        Texture texture = null;
 
-	    try {
+        try {
 
-            texture = TextureLoader.getTexture("PNG", new FileInputStream("src/main/resources/images/"+fileName+".png"));
+            texture = TextureLoader.getTexture("PNG", new FileInputStream("resources/models/"+fileName+".png"));
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -190,6 +200,49 @@ public class OpenGLLoader {
         return texID;
 
     }
+    public static TextureData decodeTextureFile(Path path) throws IOException {
+        int width;
+        int height;
+        System.out.println("--->>>>> BEFORE  <<<<<<----");
+        try ( MemoryStack stack = stackPush() ) {
+
+            IntBuffer w = stack.mallocInt(1);
+            IntBuffer h = stack.mallocInt(1);
+            IntBuffer comp = stack.mallocInt(1);
+
+            stbi_set_flip_vertically_on_load(true);
+            if (path != null) {
+                ByteBuffer image = stbi_load(path.toString(), w, h, comp, 4);
+                if (image == null) {
+                    throw new RuntimeException("Failed to load a texture file!"
+                            + System.lineSeparator() + stbi_failure_reason());
+                }
+
+               // System.out.println("Size of Image Buffer data -> width:"+w.get()+" height: "+h.get());
+                System.out.println("--->>>>> AFTER  <<<<<<----");
+                return new TextureData(image, w.get(), h.get());
+
+            }
+
+        }
+       System.out.println("Size of Image Buffer data: ");
+        return null;
+    }
+
+
+    public static BufferedImage getBufferedImage(Image img){
+        if( img == null ) return null;
+        int w = img.getWidth(null);
+        int h = img.getHeight(null);
+        // draw original image to thumbnail image object and
+        // scale it to the new size on-the-fly
+        BufferedImage bufimg = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g2 = bufimg.createGraphics();
+        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        g2.drawImage(img, 0, 0, w, h, null);
+        g2.dispose();
+        return bufimg;
+    }
 
 	public static TextureData decodeTextureFile(String fileName){
 	    int width = 0;
@@ -197,17 +250,19 @@ public class OpenGLLoader {
         ByteBuffer buffer = null;
         try {
 
+
             FileInputStream in = new FileInputStream(fileName);
             PNGDecoder decoder = new PNGDecoder(in);
             width = decoder.getWidth();
             height = decoder.getHeight();
+
             buffer = ByteBuffer.allocateDirect(4*width*height);
             decoder.decode(buffer, width * 4, PNGDecoder.RGBA);
             buffer.flip();
             in.close();
 
         }  catch (IOException e) {
-            System.err.println("failed to load textures For Sky Box.");
+            System.err.println("failed to load textures For " + fileName);
             e.printStackTrace();
         }
 
