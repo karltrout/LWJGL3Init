@@ -97,6 +97,8 @@ public class FltFileReader {
                 e.printStackTrace();
             }
 
+        }else {
+            logger.error("Could not find file "+fltFile.getName());
         }
 
         return reader;

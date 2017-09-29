@@ -12,26 +12,21 @@ import org.lwjgl.system.MemoryStack;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.*;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static org.karltrout.graphicsEngine.IOUtil.ioResourceToByteBuffer;
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL12.GL_CLAMP_TO_EDGE;
-import static org.lwjgl.opengl.GL12.GL_TEXTURE_BASE_LEVEL;
-import static org.lwjgl.opengl.GL12.GL_TEXTURE_MAX_LEVEL;
 import static org.lwjgl.opengl.GL13.glActiveTexture;
 import static org.lwjgl.opengles.GLES20.GL_TEXTURE0;
-import static org.lwjgl.opengles.GLES20.glGenerateMipmap;
 import static org.lwjgl.stb.STBTruetype.*;
 import static org.lwjgl.system.MemoryStack.stackPush;
 
@@ -182,18 +177,6 @@ public class RenderedText implements Renderable {
         TextureData t1 = new TextureData(buffer, BITMAP_W, BITMAP_H, GL_RED);
         this.textureID = t1.getId();
         System.out.println("The Texture binding T1 for PNG font is :"+t1.getId());
-
-       TextureData textureData;
-        Path textTexture = Paths.get("resources/fonts/lucidagrande.png");
-        try {
-             textureData = OpenGLLoader.decodeTextureFile(textTexture);
-             //   this.textureID = textureData.getId();
-            System.out.println("The Texture binding for PNG font is :"+textureData.getId());
-           // glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, textureData.getWidth(), textureData.getHeight(), 0, GL_RED, GL_UNSIGNED_BYTE, textureData.getCoords());
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
     }
 
