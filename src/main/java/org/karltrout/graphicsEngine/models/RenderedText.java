@@ -75,7 +75,7 @@ public class RenderedText implements Renderable {
     public RenderedText(String text, int fontHeight) {
 
         this.text = text;
-        this.material = new Material(new Vector4f(1.0f,1.0f,1.0f,1.0f), 1.0f);
+        this.material = new Material(new Vector4f(.70f,.60f,.20f,1.0f), 0.0f);
 
         try {
             ttf = ioResourceToByteBuffer("resources/fonts/FiraSans.ttf", 160 * 1024);
@@ -128,7 +128,7 @@ public class RenderedText implements Renderable {
     public void render() {
 
         cnt++;
-        updateText("This Is a Test: " + cnt);
+        updateText("This Is\na Test: " + cnt);
 
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -156,7 +156,7 @@ public class RenderedText implements Renderable {
 
     protected void init() {
 
-        glActiveTexture(GL_TEXTURE0);
+       /* glActiveTexture(GL_TEXTURE0);
         textureID = glGenTextures();
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -170,7 +170,7 @@ public class RenderedText implements Renderable {
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
-
+*/
        // TTF FONT LOAD - Not Working
         cdata = STBTTBakedChar.malloc(96);
 
@@ -304,7 +304,7 @@ public class RenderedText implements Renderable {
 
 
             }
-            
+
             if (isLineBBEnabled()) {
                 renderLineBB(lineStart, text.length(), y.get(0), scale);
             }
