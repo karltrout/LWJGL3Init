@@ -2,14 +2,13 @@ package org.karltrout.graphicsEngine.shaders;
 
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
+import org.joml.Vector3f;
 import org.joml.Vector4f;
 import org.karltrout.graphicsEngine.models.DirectionalLight;
 import org.karltrout.graphicsEngine.models.Material;
 import org.karltrout.graphicsEngine.models.PointLight;
 import org.lwjgl.opengl.GL11;
-import org.joml.Vector3f;
 import org.lwjgl.opengl.GL40;
-import org.lwjgl.opengl.GL45;
 import org.lwjgl.system.MemoryStack;
 
 import java.io.BufferedReader;
@@ -22,9 +21,9 @@ import java.util.Map;
 import static org.lwjgl.opengl.GL20.*;
 
 
-public abstract class ShaderProgram {
+public class ShaderProgram {
 	
-	private static int programID;
+	private int programID;
 	private int vertexShaderID;
 	private int fragmentShaderID;
 
@@ -38,7 +37,7 @@ public abstract class ShaderProgram {
 	        throw new Exception("could not create Shader Program.");
         }
 
-        uniforms = new HashMap<String,Integer>();
+        uniforms = new HashMap<>();
     }
 
 	/**
@@ -66,9 +65,13 @@ public abstract class ShaderProgram {
 
 	}
 
-	protected abstract void bindAttributes();
+	public void bindAttributes() {
+		bindAttribute(0, "position");
+		bindAttribute(1, "textureCoords");
+		bindAttribute(2, "normal");
+	}
 
-	protected void bindAttribute(int attribute, String variableName){
+	private void bindAttribute(int attribute, String variableName){
 		glBindAttribLocation(programID, attribute, variableName);
 	}
 
@@ -136,11 +139,11 @@ public abstract class ShaderProgram {
         glUniform2f(location, value.x, value.y);
     }
 
-    protected void loadVertexShader(String filePath) throws Exception {
+    void loadVertexShader(String filePath) throws Exception {
         this.vertexShaderID = loadShader(filePath, GL_VERTEX_SHADER);
     }
 
-    protected  void loadFragmentShader(String filePath) throws Exception {
+    void loadFragmentShader(String filePath) throws Exception {
         this.fragmentShaderID = loadShader(filePath, GL_FRAGMENT_SHADER);
     }
 
@@ -152,7 +155,7 @@ public abstract class ShaderProgram {
 		loadShader(filePath, GL40.GL_TESS_EVALUATION_SHADER);
 	}
 
-	private static int loadShader(String filePath, int type) throws Exception {
+	private int loadShader(String filePath, int type) throws Exception {
 
 		StringBuilder shaderSource = new StringBuilder();
 
@@ -193,11 +196,12 @@ public abstract class ShaderProgram {
 
 	}
 
-	public void link() throws Exception {
+    void link() throws Exception {
         glLinkProgram(programID);
 
         if(glGetProgrami(programID, GL_LINK_STATUS) == 0 ){
-            throw new Exception("Could not Link Program. Info: "+glGetProgramInfoLog(programID, 1024));
+            throw new Exception("Could not Link Program. Info: "
+                    + glGetProgramInfoLog(programID, 1024));
         }
 
         if (vertexShaderID != 0) {
@@ -211,7 +215,8 @@ public abstract class ShaderProgram {
         glValidateProgram(programID);
 
         if(glGetProgrami(programID, GL_LINK_STATUS) == 0 ){
-            System.err.println("Warning validating program Shader code: "+glGetProgramInfoLog(programID, 1024));
+            System.err.println("Warning validating program Shader code: "
+                    + glGetProgramInfoLog(programID, 1024));
         }
 
     }
@@ -251,7 +256,6 @@ public abstract class ShaderProgram {
         createUniform(uniformName + ".intensity");
     }
 
-
     public void setUniform(String uniformName, PointLight pointLight) {
 		setUniform(uniformName + ".color", pointLight.getColor() );
 		setUniform(uniformName + ".position", pointLight.getPosition());
@@ -261,7 +265,6 @@ public abstract class ShaderProgram {
 		setUniform(uniformName + ".att.linear", att.getLinear());
 		setUniform(uniformName + ".att.exponent", att.getExponent());
 	}
-
 
     public void setUniform(String uniformName, DirectionalLight dirLight) {
         setUniform(uniformName + ".color", dirLight.getColor());

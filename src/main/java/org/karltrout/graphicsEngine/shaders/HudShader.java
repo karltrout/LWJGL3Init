@@ -16,13 +16,7 @@ public class HudShader extends ShaderProgram {
 
 // Create uniforms for Ortographic-model projection matrix and base colour
         createUniform("projModelMatrix");
-        createUniform("colour");
+        createUniform("color");
     }
 
-    @Override
-    protected void bindAttributes() {
-        super.bindAttribute(0, "position");
-        super.bindAttribute(1, "textureCoords");
-        super.bindAttribute(2, "normal");
-    }
 }

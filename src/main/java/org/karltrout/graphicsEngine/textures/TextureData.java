@@ -2,13 +2,11 @@ package org.karltrout.graphicsEngine.textures;
 
 import org.joml.Vector2f;
 import org.lwjgl.opengl.GL12;
-import org.newdawn.slick.opengl.Texture;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL30.glGenerateMipmap;
 
 public class TextureData {
 
@@ -23,7 +21,7 @@ public class TextureData {
         this.textureId = textureId;
     }
 
-    public TextureData(ByteBuffer buffer, int width, int height){
+    public TextureData(ByteBuffer buffer, int width, int height, int channels, int channel){
 
         this.buffer = buffer;
         this.height = height;
@@ -33,26 +31,33 @@ public class TextureData {
         this.textureId = glGenTextures();
         // Bind the texture
         glBindTexture(GL_TEXTURE_2D, textureId);
-        //glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
         //Setup wrap mode
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
 
-
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-
         //Send texel data to OpenGL
 
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width,
-                height, 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
+        glTexImage2D(GL_TEXTURE_2D, 0, channels, width,
+                height, 0, channel, GL_UNSIGNED_BYTE, buffer);
 
         //buffer = null;
-        System.out.println("Texture Binding Complete.");
+        System.out.println("Texture Binding Complete. id:"+textureId);
 
     }
+
+    public TextureData(ByteBuffer buffer, int width, int height, int channels) {
+        this(buffer, width, height, channels, channels);
+    }
+
+    public TextureData(ByteBuffer buffer, int width, int height) {
+        this(buffer, width, height, GL_RGBA, GL_RGBA);
+    }
+
 
     public int getWidth(){
         return width;

@@ -68,8 +68,8 @@ public class ThreeDeeModeler implements Runnable {
     private void init() throws Exception {
 
         window.init();
-        envLogic.init();
         mouse.init(window);
+        envLogic.init();
 
     }
 
@@ -89,7 +89,7 @@ public class ThreeDeeModeler implements Runnable {
             elapsedTime = timer.getElapsedTime();
             accumulator += elapsedTime;
 
-            // Use elapse time here in input for timed events. multiply it by millisecods aginst speed
+            // Use elapse time here in input for timed events. multiply it by milliseconds against speed
             input();
 
             while (accumulator >= interval) {

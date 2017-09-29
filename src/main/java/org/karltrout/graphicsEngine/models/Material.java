@@ -8,7 +8,7 @@ import org.karltrout.graphicsEngine.textures.TextureData;
  * Created by karltrout on 8/24/17.
  */
 public class Material {
-    private static final Vector4f DEFAULT_COLOUR = new Vector4f(1.0f, 1.0f, 1.0f, 1.0f);
+    private static final Vector4f DEFAULT_COLOUR = new Vector4f(0.0f, 1.0f, 0.0f, 1.0f);
 
     private Vector4f ambientColour;
 

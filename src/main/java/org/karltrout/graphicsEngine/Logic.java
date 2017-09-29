@@ -8,16 +8,10 @@ import org.karltrout.graphicsEngine.Geodesy.GeoSpacialTerrainMesh;
 import org.karltrout.graphicsEngine.Geodesy.ReferenceEllipsoid;
 import org.karltrout.graphicsEngine.models.*;
 import org.karltrout.graphicsEngine.renderers.AppRenderer;
-import org.karltrout.graphicsEngine.shapeFiles.ShapeFileTerrainMesh;
 import org.karltrout.graphicsEngine.terrains.fltFile.FltFileReader;
 import org.karltrout.graphicsEngine.textures.TextureData;
-import org.lwjgl.opengl.GL11;
-import org.newdawn.slick.opengl.Texture;
 
-import java.io.File;
 import java.io.FileInputStream;
-import java.io.InputStream;
-import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -53,7 +47,8 @@ public class Logic implements ILogic {
 
     public Logic() throws Exception {
         camera = new Camera();
-        renderer = new AppRenderer(camera);
+        Hud hud = new Hud("");
+        renderer = new AppRenderer(camera, hud);
     }
 
     @Override
@@ -313,7 +308,7 @@ public class Logic implements ILogic {
 
         renderer.cleanUp();
         for (Entity entity : entities) {
-            entity.getMesh().cleanUp();
+            entity.getRenderable().cleanUp();
         }
     }
 

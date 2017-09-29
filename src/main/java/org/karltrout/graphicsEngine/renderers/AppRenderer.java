@@ -5,20 +5,12 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 import org.karltrout.graphicsEngine.Camera;
-import org.karltrout.graphicsEngine.Geodesy.ReferenceEllipsoid;
 import org.karltrout.graphicsEngine.Window;
-import org.karltrout.graphicsEngine.models.DirectionalLight;
-import org.karltrout.graphicsEngine.models.Entity;
-import org.karltrout.graphicsEngine.models.PointLight;
+import org.karltrout.graphicsEngine.models.*;
 import org.karltrout.graphicsEngine.shaders.DefaultShader;
 import org.karltrout.graphicsEngine.shaders.HudShader;
 import org.lwjgl.opengl.GL11;
 
-import java.util.logging.LogManager;
-
-import static java.lang.Math.PI;
-import static java.lang.Math.cos;
-import static java.lang.StrictMath.sin;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL11.glPolygonMode;
 
@@ -44,14 +36,42 @@ public class AppRenderer {
 
     private Transformation transformation;
 
+    private IHud hud;
     private final float specularPower;
 
-    public AppRenderer( Camera camera ) throws Exception {
+    public AppRenderer( Camera camera , IHud hud) throws Exception {
         this.camera = camera;
         specularPower = 10f;
+        this.hud = hud;
     }
 
     public void render(Entity[] entities, Window window, Vector3f ambientLight,
+                       PointLight pointLight, DirectionalLight directionalLight ) {
+
+        renderScene(entities, window, ambientLight, pointLight, directionalLight);
+
+        renderHud(window, hud);
+
+    }
+
+    private void renderHud(Window window, IHud hud) {
+        hudShader.start();
+        Matrix4f ortho = transformation.getOrthoProjectionMatrix(0, window.getWidth(), window.getHeight(), 0);
+        for (Entity hudEntity : hud.getEntities()) {
+            RenderedText text = (RenderedText) hudEntity.getRenderable();
+
+            // Set orthographic and model matrix for this HUD item
+            Matrix4f projModelMatrix = transformation.buildOrtoProjModelMatrix(hudEntity, ortho);
+            hudShader.setUniform("projModelMatrix", projModelMatrix);
+            hudShader.setUniform("color", text.getMaterial().getAmbientColour());
+
+            // Render the mesh for this HUD item
+            text.render();
+        }
+        hudShader.stop();
+    }
+
+    private void renderScene(Entity[] entities, Window window, Vector3f ambientLight,
                        PointLight pointLight, DirectionalLight directionalLight ) {
 
         prepare();
@@ -106,9 +126,9 @@ public class AppRenderer {
             Matrix4f modelViewMatrix = transformation.getModelViewMatrix(entity, viewMatrix);
             appShader.setUniform("modelViewMatrix", modelViewMatrix);
             // Render the mesh for this game item
-            appShader.setUniform("material", entity.getMesh().getMaterial());
+            appShader.setUniform("material", entity.getRenderable().getMaterial());
             // Render the mesh for this game item
-            entity.getMesh().render();
+            entity.getRenderable().render();
             glPolygonMode(GL_FRONT_AND_BACK, polyMode);
         }
 
@@ -133,16 +153,12 @@ public class AppRenderer {
     public void init() throws Exception{
 
         appShader = new DefaultShader();
-        //hudShader = new HudShader();
 
         transformation = new Transformation();
 
-        //appShader.createUniform("worldMatrix");
         appShader.createUniform("projectionMatrix");
         appShader.createUniform("modelViewMatrix");
         appShader.createUniform("texture_sampler");
-        //appShader.createUniform("hasTexture");
-        // Create uniform for material
         appShader.createMaterialUniform("material");
         // Create lighting related uniforms
         appShader.createUniform("specularPower");
@@ -151,6 +167,10 @@ public class AppRenderer {
         //appShader.createSpotLightUniform("spotLight");
         appShader.createDirectionalLightUniform("directionalLight");
 
+        hudShader = new HudShader();
 
+        //hudShader.start();
+        hud.init();
     }
+
 }

@@ -139,6 +139,8 @@ public class Mesh implements Renderable {
     @Override
     public void cleanUp() {
         glDisableVertexAttribArray(0);
+        glDisableVertexAttribArray(1);
+        glDisableVertexAttribArray(2);
         // Delete the VBOs
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glDeleteBuffers(vertexVboId);
@@ -146,6 +148,7 @@ public class Mesh implements Renderable {
         if(texture != null)
             glDeleteBuffers(texture.getId());
 
+        glDeleteBuffers(texVboId);
         glDeleteBuffers(normalsVboId);
         // Delete the VAO
         glBindVertexArray(0);

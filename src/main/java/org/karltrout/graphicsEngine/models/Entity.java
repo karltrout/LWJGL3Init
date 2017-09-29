@@ -8,13 +8,13 @@ import org.lwjgl.opengl.GL11;
 
 /**
  * An Object in the World.
- * Holds the objects mesh, position, scale and rotation values.
+ * Holds the objects renderable, position, scale and rotation values.
  * <p>
  * Created by karltrout on 7/22/17.
  */
 public class Entity {
 
-    private final Renderable mesh;
+    private final Renderable renderable;
     private final Vector3f position;
     private float scale;
     private final Vector3f rotation;
@@ -27,8 +27,8 @@ public class Entity {
     private int minAltitude = 0;
     private int maxAltitude = 120000000;
 
-    public Entity(Renderable mesh) {
-        this.mesh = mesh;
+    public Entity(Renderable renderable) {
+        this.renderable = renderable;
         position = new Vector3f(0, 0, 0);
         scale = 1;
         rotation = new Vector3f(0, 0, 0);
@@ -62,8 +62,8 @@ public class Entity {
         this.rotation.z = z;
     }
 
-    public Renderable getMesh() {
-        return mesh;
+    public Renderable getRenderable() {
+        return renderable;
     }
 
     public boolean isWireMesh() {
@@ -122,4 +122,5 @@ public class Entity {
     public void setFrontFace(int frontFace) {
         this.frontFace = frontFace;
     }
+
 }
