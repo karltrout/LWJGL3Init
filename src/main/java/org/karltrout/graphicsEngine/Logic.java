@@ -62,7 +62,7 @@ public class Logic implements ILogic {
             Mesh ellipsoid =  ReferenceEllipsoid.referenceElipsoidMesh().build();
             Entity planetEarth = new Entity(ellipsoid);
             planetEarth.setScale(scaleFactor);
-            planetEarth.makeWireFrame(true);
+            planetEarth.makeWireFrame(false);
 
             entities.add(planetEarth);
 
