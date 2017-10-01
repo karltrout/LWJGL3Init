@@ -67,7 +67,6 @@ public class ReferenceEllipsoid {
         return location;
     }
 
-
     public static Vector3f cartesianCoordinates(double latitude, double longitude, double height){
         Vector3f coordinates = new Vector3f();
 

@@ -2,6 +2,8 @@ package org.karltrout.graphicsEngine;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.geotools.measure.Latitude;
+import org.geotools.measure.Longitude;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.karltrout.graphicsEngine.Geodesy.GeoSpacialTerrainMesh;
@@ -120,8 +122,17 @@ public class Logic implements ILogic {
 
             //bunny.setCullFace(GL11.GL_FRONT_AND_BACK);
 
-            //bunny.setScale(scaleFactor);
-            Vector3f bunnySpot = ReferenceEllipsoid.cartesianCoordinates(33.507f, -112.00f, 48500.000f).mul(scaleFactor);
+            bunny.setScale(.10f);
+            /*
+                Latitude: 	33-25.863480N
+                Longitude: 	112-01.626082W
+                Elevation: 	1110.1 ft.
+             */
+            //Latitude lat = new Latitude("33°25'86N");
+            //Longitude lng = new Longitude("112°01'63W");
+            float altitude = 4110.1f;// * 0.3048f; 33.428817, -112.026486
+            //Vector3f bunnySpot = ReferenceEllipsoid.cartesianCoordinates(33.507f, -112.00f, 48500.000f).mul(scaleFactor);
+            Vector3f bunnySpot = ReferenceEllipsoid.cartesianCoordinates(33.428817, -112.026486, altitude).mul(scaleFactor);
             logger.info("Bunny Position: "+bunnySpot);
 
             bunny.setPosition(bunnySpot.x , bunnySpot.y, bunnySpot.z );
@@ -161,7 +172,7 @@ public class Logic implements ILogic {
             logger.debug("camera Position: "+camera.getPosition());
             logger.debug("camera location: "+ camera.getLocation());
 
-            hud.updateWithPosition(0, camera.getRotation());
+            hud.updateWithPosition(0, camera.getPosition());
 
             ambientLight = new Vector3f(0.2f, 0.2f, 0.2f);
             Vector3f lightColour = new Vector3f(1, 1, 1);
@@ -290,7 +301,7 @@ public class Logic implements ILogic {
             camera.moveRotation(cameraInc.x * -1 , 0, cameraInc.y * -1);
             cameraInc.set(0, 0, 0);
 
-            hud.updateWithPosition(interval, camera.getRotation());
+            hud.updateWithPosition(interval, camera.getPosition());
         }
         // Update camera based on mouse
         if (mouse.isRightButtonPressed()) {
@@ -298,7 +309,7 @@ public class Logic implements ILogic {
             camera.moveRotation(rotVec.x * MOUSE_SENSITIVITY, rotVec.y * MOUSE_SENSITIVITY
                     , 0);
 
-            hud.updateWithPosition(interval, camera.getRotation());
+            hud.updateWithPosition(interval, camera.getPosition());
         }
 
         // Update directional light direction, intensity and colour

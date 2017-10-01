@@ -36,6 +36,7 @@ public class FltFileReader {
             int row = 0;
             try (InputStream input = new BufferedInputStream(new FileInputStream(file))) {
 
+
                 while (input.read(buffer) != -1) {
                     int col = 0;
                     for (int i = 0; i < buffer.length; i = i + 4) {
@@ -128,7 +129,7 @@ public class FltFileReader {
         public final int nrows;
         final float xllcorner;
         final float yllcorner;
-        final Double cellsize;
+        public final Double cellsize;
         final int noDataVal;
         final String byteOrder;
 

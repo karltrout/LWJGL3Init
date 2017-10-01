@@ -155,10 +155,10 @@ public class GeoSpacialTerrainMesh extends TerrainMesh {
             int xResolution;
             int zResolution;
             Vector3f vector3f;
-            double latitudeDegrees = ( z > 0 ) ? (hdr.getLatitude() - (double)(z * resolution) / hdr.nrows ): hdr.getLatitude();
+            double latitudeDegrees = ( z > 0 ) ? hdr.getLatitude() - z * (resolution * hdr.cellsize ): hdr.getLatitude();
             double longitudeDegrees;
             for ( int x = 0 ; x < GRID_SIZE; x++ ){
-                 longitudeDegrees = (x > 0) ? hdr.getLongitude() + ((double)( x * resolution) / hdr.ncols ) : hdr.getLongitude();
+                 longitudeDegrees = (x > 0) ? hdr.getLongitude() + x * (resolution * hdr.cellsize ) : hdr.getLongitude();
                  xResolution = x * resolution;
                  zResolution = z * resolution;
                  vector3f = ReferenceEllipsoid.cartesianCoordinates(latitudeDegrees,longitudeDegrees, fltFile.data[zResolution][xResolution] * 10);
@@ -174,12 +174,13 @@ public class GeoSpacialTerrainMesh extends TerrainMesh {
         float texResolution = resolution/MIN_RESOLUTION;
         for (float i = 0; i < GRID_SIZE; i++) {
 
-            float y = (i == 0)? i : (i / GRID_SIZE) * this.textureHeight * texResolution;
+            float y = (i == 0)? i : (i / GRID_SIZE) * (float)(hdr.cellsize*hdr.ncols)  * texResolution;
             for (float j = 0; j <  GRID_SIZE; j++) {
-                float x = (j == 0) ? j : ( j / GRID_SIZE) * this.textureWidth * texResolution;
+                float x = (j == 0) ? j : ( j / GRID_SIZE) * (float)(hdr.cellsize*hdr.ncols)  * texResolution;
                 textureIndices.add(new Vector2f(x, y));
             }
         }
+        logger.info("texture indice size: "+textureIndices.size());
         return textureIndices;
     }
 
