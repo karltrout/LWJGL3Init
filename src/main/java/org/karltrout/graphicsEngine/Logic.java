@@ -25,6 +25,7 @@ import static org.lwjgl.opengl.GL11.*;
  */
 public class Logic implements ILogic {
 
+    private final Hud hud;
     private Logger logger = LogManager.getLogger(Logic.class);
 
     private final AppRenderer renderer;
@@ -45,9 +46,11 @@ public class Logic implements ILogic {
     private float zoomSpd = 100;
     private float spdMultiplyer = 4.0f;
 
+    private Entity movableEntity;
+
     public Logic() throws Exception {
         camera = new Camera();
-        Hud hud = new Hud("");
+        hud = new Hud("Hud Window");
         renderer = new AppRenderer(camera, hud);
     }
 
@@ -122,8 +125,10 @@ public class Logic implements ILogic {
             logger.info("Bunny Position: "+bunnySpot);
 
             bunny.setPosition(bunnySpot.x , bunnySpot.y, bunnySpot.z );
-            bunny.setRotation( -34, 10,   -10);
+            //bunny.setRotation( -34, 10,   -10);
             entities.add(bunny);
+
+            movableEntity = bunny;
 
             //ShapeFileTerrainMesh sftm = new ShapeFileTerrainMesh();
             //sftm.addFltFiles(fltFileReader);
@@ -156,6 +161,8 @@ public class Logic implements ILogic {
             logger.debug("camera Position: "+camera.getPosition());
             logger.debug("camera location: "+ camera.getLocation());
 
+            hud.updateWithPosition(0, camera.getRotation());
+
             ambientLight = new Vector3f(0.2f, 0.2f, 0.2f);
             Vector3f lightColour = new Vector3f(1, 1, 1);
             Vector3f lightPosition = new Vector3f(0, 0, 1);
@@ -184,51 +191,80 @@ public class Logic implements ILogic {
     public void input(Window window, Mouse mouse) {
 
         float travel = (float) (zoomSpd /60 /60 /KILOMETERS_PER_LATITUDE_DEGREE);
-        if(cameraLoc.x <= -90 || cameraLoc.x >= 90 ){
-            cameraLoc.x =  cameraLoc.x < 0 ? -90 : 90;
-            ind = ind * -1;
-            cameraLoc.y = (cameraLoc.y < 0 ) ? 180 + cameraLoc.y: cameraLoc.y - 180;
-        }
 
-        if (window.isKeyPressed(GLFW_KEY_W)) {
-            cameraInc.x -=  travel;
+        if(!window.isKeyPressed(GLFW_KEY_RIGHT_ALT)) {
 
-            if ( cameraLoc.x < 90 && ind > 0){
-                cameraLoc.x +=  travel;
+            if (cameraLoc.x <= -90 || cameraLoc.x >= 90) {
+                cameraLoc.x = cameraLoc.x < 0 ? -90 : 90;
+                ind = ind * -1;
+                cameraLoc.y = (cameraLoc.y < 0) ? 180 + cameraLoc.y : cameraLoc.y - 180;
             }
-            else{
-                cameraLoc.x -= travel;
+
+            if (window.isKeyPressed(GLFW_KEY_W)) {
+                cameraInc.x -= travel;
+
+                if (cameraLoc.x < 90 && ind > 0) {
+                    cameraLoc.x += travel;
+                } else {
+                    cameraLoc.x -= travel;
+                }
+            }
+
+            if (window.isKeyPressed(GLFW_KEY_S)) {
+                cameraInc.x += travel;
+
+                if (cameraLoc.x <= 90 && ind > 0) {
+                    cameraLoc.x -= travel;
+                } else {
+                    if (cameraLoc.x < 90) cameraLoc.x += travel;
+                }
+            }
+
+            if (window.isKeyPressed(GLFW_KEY_A)) {
+                cameraInc.y -= travel;
+                cameraLoc.y -= travel;
+            } else if (window.isKeyPressed(GLFW_KEY_D)) {
+                cameraInc.y += travel;
+                cameraLoc.y += travel;
+            }
+
+            if (window.isKeyPressed(GLFW_KEY_Z)) {
+                cameraInc.z -= zoomSpd;
+                cameraLoc.z -= zoomSpd;
+                if (cameraLoc.z < MIN_HEIGHT) cameraLoc.z = MIN_HEIGHT;
+            } else if (window.isKeyPressed(GLFW_KEY_X)) {
+                cameraInc.z += zoomSpd;
+                cameraLoc.z += zoomSpd;
+            }
+            adjustCameraSpdBasedOnheight(cameraLoc.z);
+        }
+        else if(movableEntity != null)
+        {
+            travel = 1;  //temporary shit
+            Vector3f rotation = movableEntity.getRotation();
+
+            if(window.isKeyPressed(GLFW_KEY_RIGHT_ALT)){
+                if (window.isKeyPressed(GLFW_KEY_W)) {
+                    rotation.x -=  travel;
+                }
+                 else if (window.isKeyPressed(GLFW_KEY_S)) {
+                    rotation.x += travel;
+                }
+                if (window.isKeyPressed(GLFW_KEY_A)) {
+                    rotation.y -= travel;
+                }
+                else if (window.isKeyPressed(GLFW_KEY_D)) {
+                    rotation.y += travel;
+                }
+                if (window.isKeyPressed(GLFW_KEY_Q)) {
+                    rotation.z -= travel;
+                }
+                else if (window.isKeyPressed(GLFW_KEY_E)) {
+                    rotation.z += travel;
+                }
+                movableEntity.setRotation(rotation.x, rotation.y, rotation.z);
             }
         }
-
-        if (window.isKeyPressed(GLFW_KEY_S)) {
-            cameraInc.x += travel;
-
-            if ( cameraLoc.x <= 90 && ind > 0){
-                cameraLoc.x -= travel;
-            }
-            else{
-               if (cameraLoc.x < 90 ) cameraLoc.x += travel;
-            }
-        }
-
-        if (window.isKeyPressed(GLFW_KEY_A)) {
-            cameraInc.y -= travel;
-            cameraLoc.y -= travel;
-        } else if (window.isKeyPressed(GLFW_KEY_D)) {
-            cameraInc.y += travel;
-            cameraLoc.y += travel;
-        }
-
-        if (window.isKeyPressed(GLFW_KEY_Z)) {
-            cameraInc.z -= zoomSpd;
-            cameraLoc.z -= zoomSpd;
-            if (cameraLoc.z < MIN_HEIGHT) cameraLoc.z = MIN_HEIGHT;
-        } else if (window.isKeyPressed(GLFW_KEY_X)) {
-            cameraInc.z += zoomSpd;
-            cameraLoc.z += zoomSpd;
-        }
-        adjustCameraSpdBasedOnheight(cameraLoc.z);
     }
 
     private void adjustCameraSpdBasedOnheight(float z) {
@@ -252,14 +288,17 @@ public class Logic implements ILogic {
             camera.moveToLocation(p.x * scaleFactor , p.y  * scaleFactor , p.z  * scaleFactor );
             camera.setLocation(cameraLoc);
             camera.moveRotation(cameraInc.x * -1 , 0, cameraInc.y * -1);
-
             cameraInc.set(0, 0, 0);
+
+            hud.updateWithPosition(interval, camera.getRotation());
         }
         // Update camera based on mouse
         if (mouse.isRightButtonPressed()) {
             Vector2f rotVec = mouse.getDisplVec();
             camera.moveRotation(rotVec.x * MOUSE_SENSITIVITY, rotVec.y * MOUSE_SENSITIVITY
                     , 0);
+
+            hud.updateWithPosition(interval, camera.getRotation());
         }
 
         // Update directional light direction, intensity and colour

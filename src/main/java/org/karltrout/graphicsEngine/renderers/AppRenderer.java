@@ -5,6 +5,7 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 import org.karltrout.graphicsEngine.Camera;
+import org.karltrout.graphicsEngine.Timer;
 import org.karltrout.graphicsEngine.Window;
 import org.karltrout.graphicsEngine.models.*;
 import org.karltrout.graphicsEngine.shaders.DefaultShader;
@@ -38,11 +39,13 @@ public class AppRenderer {
 
     private IHud hud;
     private final float specularPower;
+    private final Timer timer;
 
     public AppRenderer( Camera camera , IHud hud) throws Exception {
         this.camera = camera;
         specularPower = 10f;
         this.hud = hud;
+        this.timer = new Timer();
     }
 
     public void render(Entity[] entities, Window window, Vector3f ambientLight,
@@ -56,9 +59,12 @@ public class AppRenderer {
 
     private void renderHud(Window window, IHud hud) {
         hudShader.start();
+        double frameRate = timer.getElapsedTime();
         Matrix4f ortho = transformation.getOrthoProjectionMatrix(0, window.getWidth(), window.getHeight(), 0);
         for (Entity hudEntity : hud.getEntities()) {
             RenderedText text = (RenderedText) hudEntity.getRenderable();
+
+            text.updateRate(frameRate);
 
             // Set orthographic and model matrix for this HUD item
             Matrix4f projModelMatrix = transformation.buildOrtoProjModelMatrix(hudEntity, ortho);

@@ -1,15 +1,18 @@
 package org.karltrout.graphicsEngine.models;
 
+import org.joml.Vector3f;
+import org.karltrout.graphicsEngine.Timer;
+
 /**
  * Created by karltrout on 9/24/17.
  */
 public class Hud implements IHud {
 
+    private final RenderedText hudText;
     Entity[] entities;
-    String text;
 
     public Hud(String text){
-        RenderedText hudText = new RenderedText(text, 36);
+        hudText = new RenderedText(text, 36);
         Entity entity = new Entity(hudText);
         entity.setPosition(10, 46, 0);
         entity.setScale(1f);
@@ -33,5 +36,15 @@ public class Hud implements IHud {
             renderedText.init();
             renderedText.updateText("This is a Test");
         }
+    }
+
+    public void updateWithPosition(float interval, Vector3f position) {
+
+        String positionStr = "X: "+position.x+"\n"
+                +"Y: "+position.y+"\n"
+                +"Z: "+position.z;
+
+        hudText.updateText(positionStr);
+
     }
 }

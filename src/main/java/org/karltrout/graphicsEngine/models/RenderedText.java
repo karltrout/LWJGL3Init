@@ -65,12 +65,15 @@ public class RenderedText implements Renderable {
 
     private TextMesh mesh;
     private int cnt;
+    private double rate = 0.0d;
+    private double frameRateCnt = 0.0d;
+    private int frameCnt;
 
 
     public RenderedText(String text, int fontHeight) {
 
         this.text = text;
-        this.material = new Material(new Vector4f(.70f,.60f,.20f,1.0f), 0.0f);
+        this.material = new Material(new Vector4f(1.0f,1.0f,1.0f,.75f), 0.0f);
 
         try {
             ttf = ioResourceToByteBuffer("resources/fonts/FiraSans.ttf", 160 * 1024);
@@ -112,18 +115,33 @@ public class RenderedText implements Renderable {
 
     }
 
+    public void updateRate (double rate ){
+
+        this.frameCnt++;
+        this.frameRateCnt = this.frameRateCnt + rate ;
+
+        if(this.frameRateCnt >= 1){
+            this.rate = frameCnt;
+            this.frameRateCnt = 0d;
+            this.frameCnt = 0;
+            updateText(this.text);
+        }
+
+    }
+
     @Override
     public void cleanUp() {
 
 
+        System.out.println("no clean up here why?");
 
     }
 
     @Override
     public void render() {
 
-        cnt++;
-        updateText("This Is\na Test: " + cnt);
+       // cnt++;
+       // updateText("This Is\na Test: " + cnt);
 
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -199,7 +217,7 @@ public class RenderedText implements Renderable {
 
     public void updateText(String text) {
         this.text = text;
-
+        text = text + "\nFrame rate: "+this.rate;
         float scale = stbtt_ScaleForPixelHeight(info, getFontHeight());
 
         try (MemoryStack stack = stackPush()) {
