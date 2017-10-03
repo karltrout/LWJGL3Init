@@ -1,12 +1,14 @@
 package org.karltrout.graphicsEngine.renderers;
 
-import org.joml.Matrix4f;
-import org.joml.Vector3f;
+import org.joml.*;
 import org.karltrout.graphicsEngine.Camera;
 import org.karltrout.graphicsEngine.models.Entity;
 
+import java.lang.Math;
+
 /**
  * Created by karltrout on 7/22/17.
+ * blah
  */
 public class Transformation {
     private final Matrix4f projectionMatrix;
@@ -33,7 +35,7 @@ public class Transformation {
         Vector3f rotation = camera.getRotation();
         viewMatrix.identity();
         // First do the rotation so camera rotates over its position
-        viewMatrix.rotate((float)Math.toRadians(rotation.x), new Vector3f(1, 0, 0))
+        viewMatrix.rotate((float) Math.toRadians(rotation.x), new Vector3f(1, 0, 0))
                 .rotate((float)Math.toRadians(rotation.y), new Vector3f(0, 1, 0))
                 .rotate((float)Math.toRadians(rotation.z), new Vector3f(0,0,1));
         // Then do the translation, remember the worl comes to you so its a negtive movement
@@ -53,14 +55,10 @@ public class Transformation {
     }
 
     public Matrix4f getModelViewMatrix(Entity entity, Matrix4f viewMatrix) {
-        Vector3f rotation = entity.getRotation();
-        modelViewMatrix.identity().translate(entity.getPosition()).
-                rotateX((float)Math.toRadians(-rotation.x)).
-                rotateY((float)Math.toRadians(-rotation.y)).
-                rotateZ((float)Math.toRadians(-rotation.z)).
-                scale(entity.getScale());
+        Matrix4f modelMatrix = entity.getModelMatrix();
+        modelViewMatrix.identity().translate(entity.getPosition()).scale(entity.getScale());
         Matrix4f viewCurr = new Matrix4f(viewMatrix);
-        return viewCurr.mul(modelViewMatrix);
+        return viewCurr.mul(modelViewMatrix).mul(modelMatrix);
     }
 
     public final Matrix4f getOrthoProjectionMatrix(float left, float right, float bottom,

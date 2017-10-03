@@ -1,5 +1,6 @@
 package org.karltrout.graphicsEngine.models;
 
+import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.karltrout.graphicsEngine.Location;
@@ -23,6 +24,12 @@ public class Entity {
     private Location location;
     private int cullFace = GL11.GL_BACK;
     private int frontFace = GL11.GL_CCW;
+
+    public Matrix4f getModelMatrix() {
+        return modelMatrix;
+    }
+
+    private Matrix4f modelMatrix = new Matrix4f().identity();
 
     private int minAltitude = 0;
     private int maxAltitude = 120000000;
@@ -60,6 +67,12 @@ public class Entity {
         this.rotation.x = x;
         this.rotation.y = y;
         this.rotation.z = z;
+    }
+
+    public void moveRotation(float offsetX, float offsetY, float offsetZ) {
+        rotation.x += offsetX;
+        rotation.y += offsetY;
+        rotation.z += offsetZ;
     }
 
     public Renderable getRenderable() {

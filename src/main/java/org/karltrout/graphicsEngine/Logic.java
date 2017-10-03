@@ -4,6 +4,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.geotools.measure.Latitude;
 import org.geotools.measure.Longitude;
+import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.karltrout.graphicsEngine.Geodesy.GeoSpacialTerrainMesh;
@@ -162,9 +163,10 @@ public class Logic implements ILogic {
             }
 
             //set Camera initial start
-            cameraLoc = new Vector3f(34.0f-.5f , -112.0f , 50000.000f);
-            Vector3f cameraPos = ReferenceEllipsoid.cartesianCoordinates( cameraLoc.x, cameraLoc.y, cameraLoc.z).mul(scaleFactor);
+            cameraLoc = new Vector3f(33.428817f, -112.026486f, altitude);
+            //Vector3f cameraPos = ReferenceEllipsoid.cartesianCoordinates( cameraLoc.x, cameraLoc.y, cameraLoc.z).mul(scaleFactor);
             camera.setLocation(cameraLoc);
+            Vector3f cameraPos = ReferenceEllipsoid.cartesianCoordinates(33.427817, -112.026486, altitude+500).mul(scaleFactor);
 
             camera.moveTo(cameraPos.x  ,cameraPos.y ,cameraPos.z );
             camera.moveRotation(  -90 + (-1 * cameraLoc.x), 0,   -90 + (-1 * cameraLoc.y) );
@@ -172,7 +174,7 @@ public class Logic implements ILogic {
             logger.debug("camera Position: "+camera.getPosition());
             logger.debug("camera location: "+ camera.getLocation());
 
-            hud.updateWithPosition(0, camera.getPosition());
+            hud.updateWithPosition(0, movableEntity.getRotation());
 
             ambientLight = new Vector3f(0.2f, 0.2f, 0.2f);
             Vector3f lightColour = new Vector3f(1, 1, 1);
@@ -251,29 +253,36 @@ public class Logic implements ILogic {
         }
         else if(movableEntity != null)
         {
-            travel = 1;  //temporary shit
+            travel = (float)Math.toRadians(1);  //temporary shit
             Vector3f rotation = movableEntity.getRotation();
+
+            Matrix4f model = movableEntity.getModelMatrix();
 
             if(window.isKeyPressed(GLFW_KEY_RIGHT_ALT)){
                 if (window.isKeyPressed(GLFW_KEY_W)) {
-                    rotation.x -=  travel;
+                    model.rotateX(-travel);
+                    rotation.x -=  1;
                 }
                  else if (window.isKeyPressed(GLFW_KEY_S)) {
-                    rotation.x += travel;
+                    model.rotateX(travel);
+                    rotation.x += 1;
                 }
-                if (window.isKeyPressed(GLFW_KEY_A)) {
-                    rotation.y -= travel;
+                if (window.isKeyPressed(GLFW_KEY_D)) {
+                    model.rotateY(-travel);
+                    rotation.y -= 1;
                 }
-                else if (window.isKeyPressed(GLFW_KEY_D)) {
-                    rotation.y += travel;
+                else if (window.isKeyPressed(GLFW_KEY_A)) {
+                   model.rotateY(travel);
+                    rotation.y += 1;
                 }
-                if (window.isKeyPressed(GLFW_KEY_Q)) {
-                    rotation.z -= travel;
+                if (window.isKeyPressed(GLFW_KEY_E)) {
+                    model.rotateZ(-travel);
+                    rotation.z -= 1;
                 }
-                else if (window.isKeyPressed(GLFW_KEY_E)) {
-                    rotation.z += travel;
+                else if (window.isKeyPressed(GLFW_KEY_Q)) {
+                    model.rotateZ(travel);
+                    rotation.z += 1;
                 }
-                movableEntity.setRotation(rotation.x, rotation.y, rotation.z);
             }
         }
     }
@@ -301,7 +310,7 @@ public class Logic implements ILogic {
             camera.moveRotation(cameraInc.x * -1 , 0, cameraInc.y * -1);
             cameraInc.set(0, 0, 0);
 
-            hud.updateWithPosition(interval, camera.getPosition());
+         //   hud.updateWithPosition(interval, movableEntity.getRotation());
         }
         // Update camera based on mouse
         if (mouse.isRightButtonPressed()) {
@@ -309,8 +318,9 @@ public class Logic implements ILogic {
             camera.moveRotation(rotVec.x * MOUSE_SENSITIVITY, rotVec.y * MOUSE_SENSITIVITY
                     , 0);
 
-            hud.updateWithPosition(interval, camera.getPosition());
         }
+
+        hud.updateWithPosition(interval, movableEntity.getRotation());
 
         // Update directional light direction, intensity and colour
         directionalLight.getDirection().x =  -1;
