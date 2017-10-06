@@ -36,7 +36,7 @@ public class OBJLoader {
     public OBJLoader(){
     }
 
-    public Mesh loadObjModel(String fileName, TextureData textureData) throws FileNotFoundException {
+    Mesh loadObjModel(String fileName, TextureData textureData) throws FileNotFoundException {
 
         logger.debug("Loading Model :"+fileName);
         this.texture = textureData;
@@ -46,7 +46,7 @@ public class OBJLoader {
             while (true) {
                 String line = bufferedReader.readLine();
                 if (line == null) break;
-                String[] currentLine = line.split(" ");
+                String[] currentLine = line.split("\\s+");
                 if (line.startsWith("v ")) {
                     Vector3f vertex = new Vector3f(
                             Float.parseFloat(currentLine[1]),
@@ -73,9 +73,32 @@ public class OBJLoader {
                 } else if (line.startsWith("f ")) {
 
                     String[][] faceVector = new String[3][3];
-                    faceVector[0] = currentLine[1].split("/");
-                    faceVector[1] = currentLine[2].split("/");
-                    faceVector[2] = currentLine[3].split("/");
+                    String[][] faceData = new String[3][3];
+
+                    faceData[0] = currentLine[1].split("/");
+                    faceData[1] = currentLine[2].split("/");
+                    faceData[2] = currentLine[3].split("/");
+
+                    //TODO Why do I need to do this for obj objects without textures?
+                    //TODO there are two factors to this setting facevector data and texture arrays
+                    if(faceData[0].length == 1) {
+                        faceVector[0] = new String[] { faceData[0][0],"1", "1"};
+                    }
+                    else faceVector[0] = faceData[0];
+
+                    if(faceData[1].length == 1) {
+                        faceVector[1] = new String[] { faceData[1][0],"1", "1"};
+                    }
+                    else faceVector[1] = faceData[1];
+
+                    if(faceData[2].length == 1) {
+                        faceVector[2] = new String[] { faceData[2][0],"1", "1"};
+                    }
+                    else faceVector[2] = faceData[2];
+
+                    if(faceVector[0].length > 1 && faceVector[0][1].isEmpty()) faceVector[0][1] = "1";
+                    if(faceVector[1].length > 1 && faceVector[1][1].isEmpty()) faceVector[1][1] = "1";
+                    if(faceVector[2].length > 1 && faceVector[2][1].isEmpty()) faceVector[2][1] = "1";
 
                     faces.add(faceVector);
 
@@ -105,6 +128,12 @@ public class OBJLoader {
     }
 
     public Mesh build() {
+
+        //TODO Why do I need to do this for obj objects without textures?
+        //TODO there are two factors to this setting facevector data and texture arrays
+        if( textures.size() == 0) {
+            textures.add(new Vector2f(0));
+        }
 
         for (String[][] face : faces) {
             processVertex(face[0], indices, textures, normals, textureArray, normalsArray);

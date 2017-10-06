@@ -2,17 +2,17 @@ package org.karltrout.graphicsEngine;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.geotools.measure.Latitude;
-import org.geotools.measure.Longitude;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
+import org.joml.Vector4f;
 import org.karltrout.graphicsEngine.Geodesy.GeoSpacialTerrainMesh;
 import org.karltrout.graphicsEngine.Geodesy.ReferenceEllipsoid;
 import org.karltrout.graphicsEngine.models.*;
 import org.karltrout.graphicsEngine.renderers.AppRenderer;
 import org.karltrout.graphicsEngine.terrains.fltFile.FltFileReader;
 import org.karltrout.graphicsEngine.textures.TextureData;
+import org.lwjgl.opengl.GL11;
 
 import java.io.FileInputStream;
 import java.nio.file.Path;
@@ -68,7 +68,7 @@ public class Logic implements ILogic {
             Mesh ellipsoid =  ReferenceEllipsoid.referenceElipsoidMesh().build();
             Entity planetEarth = new Entity(ellipsoid);
             planetEarth.setScale(scaleFactor);
-            planetEarth.makeWireFrame(false);
+            planetEarth.makeWireFrame(true);
 
             entities.add(planetEarth);
 
@@ -81,7 +81,7 @@ public class Logic implements ILogic {
             terrainEntity.setMaxAltitude(15000);
             terrainEntity.setScale(scaleFactor);
             terrainEntity.makeWireFrame(false);
-            entities.add(terrainEntity);
+           // entities.add(terrainEntity);
             fltFileReader = null;
             geoTerrainMesh = null;
 
@@ -95,7 +95,7 @@ public class Logic implements ILogic {
             terrainEntity112.setMaxAltitude(15000);
             terrainEntity112.setScale(scaleFactor );
             terrainEntity112.makeWireFrame(false);
-            entities.add(terrainEntity112);
+           // entities.add(terrainEntity112);
             fltFileReader112 = null;
             geoTerrainMesh112 = null;
 
@@ -111,44 +111,49 @@ public class Logic implements ILogic {
          //   int textureId = loader.loadTexture("bunny3");
 
             Mesh model = objLoader.loadObjModel("A380",textureData );
-
-           // Material material = new Material();
-           // material.setTexture(true);
-           // Mesh mesh = new Mesh();
-           // mesh.setMaterial(material);
-           // mesh.setTexture(new TextureData(textureId));
-
             Entity bunny = new Entity(model);
             bunny.makeWireFrame(false);
-
-            //bunny.setCullFace(GL11.GL_FRONT_AND_BACK);
-
             bunny.setScale(.10f);
             /*
                 Latitude: 	33-25.863480N
                 Longitude: 	112-01.626082W
                 Elevation: 	1110.1 ft.
              */
-            //Latitude lat = new Latitude("33°25'86N");
-            //Longitude lng = new Longitude("112°01'63W");
             float altitude = 4110.1f;// * 0.3048f; 33.428817, -112.026486
-            //Vector3f bunnySpot = ReferenceEllipsoid.cartesianCoordinates(33.507f, -112.00f, 48500.000f).mul(scaleFactor);
             Vector3f bunnySpot = ReferenceEllipsoid.cartesianCoordinates(33.428817, -112.026486, altitude).mul(scaleFactor);
             logger.info("Bunny Position: "+bunnySpot);
 
             bunny.setPosition(bunnySpot.x , bunnySpot.y, bunnySpot.z );
-            //bunny.setRotation( -34, 10,   -10);
             entities.add(bunny);
 
             movableEntity = bunny;
 
+            objLoader = new OBJLoader();
+            Mesh terminal = objLoader.loadObjModel("kphx",textureData );
+            terminal.setMaterial(new Material(new Vector4f(1f,0f,1f,1f), 1.0f));
+            Entity terminalEntity = new Entity(terminal);
+            terminalEntity.makeWireFrame(false);
+
+            terminalEntity.setScale(0.1f);
+            /*
+                Latitude: 	33-25.863480N
+                Longitude: 	112-01.626082W
+                Elevation: 	1110.1 ft.
+             */
+            float terminalAltitude = 8500.0f;// * 0.3048f; 33.428817, -112.026486
+            Vector3f terminalPosition = ReferenceEllipsoid.cartesianCoordinates(33.428817, -112.026486, altitude).mul(scaleFactor);
+            logger.info("Terminal Position: "+terminalPosition);
+
+            terminalEntity.setPosition(terminalPosition.x , terminalPosition.y, terminalPosition.z );
+            entities.add(terminalEntity);
+
             //ShapeFileTerrainMesh sftm = new ShapeFileTerrainMesh();
             //sftm.addFltFiles(fltFileReader);
-            //sftm.addFltFiles(fltFileReader112);
-            //sftm.createHeightMap(scaleFactor);
+           // sftm.addFltFiles(fltFileReader112);
+           // sftm.createHeightMap(scaleFactor);
 
             //Entity kphx = new Entity(sftm.buildMesh());
-            //kphx.setScale(scaleFactor);
+           // kphx.setScale(scaleFactor);
             //kphx.makeWireFrame(false);
             //entities.add(kphx);
 
@@ -169,12 +174,12 @@ public class Logic implements ILogic {
             Vector3f cameraPos = ReferenceEllipsoid.cartesianCoordinates(33.427817, -112.026486, altitude+500).mul(scaleFactor);
 
             camera.moveTo(cameraPos.x  ,cameraPos.y ,cameraPos.z );
-            camera.moveRotation(  -90 + (-1 * cameraLoc.x), 0,   -90 + (-1 * cameraLoc.y) );
+            camera.moveRotation(  -90 + (-1 * cameraLoc.x),    -90 + (-1 * cameraLoc.y), 0 );
 
             logger.debug("camera Position: "+camera.getPosition());
             logger.debug("camera location: "+ camera.getLocation());
 
-            hud.updateWithPosition(0, movableEntity.getRotation());
+            hud.updateWithPosition(0, camera.getRotation());
 
             ambientLight = new Vector3f(0.2f, 0.2f, 0.2f);
             Vector3f lightColour = new Vector3f(1, 1, 1);
@@ -307,20 +312,25 @@ public class Logic implements ILogic {
             Vector3f p = ReferenceEllipsoid.cartesianCoordinates(cameraLoc.x, cameraLoc.y,  cameraLoc.z);
             camera.moveToLocation(p.x * scaleFactor , p.y  * scaleFactor , p.z  * scaleFactor );
             camera.setLocation(cameraLoc);
-            camera.moveRotation(cameraInc.x * -1 , 0, cameraInc.y * -1);
+            //camera.moveRotation(cameraInc.x * -1 , 0, cameraInc.y * -1);
             cameraInc.set(0, 0, 0);
 
          //   hud.updateWithPosition(interval, movableEntity.getRotation());
         }
         // Update camera based on mouse
         if (mouse.isRightButtonPressed()) {
+
             Vector2f rotVec = mouse.getDisplVec();
             camera.moveRotation(rotVec.x * MOUSE_SENSITIVITY, rotVec.y * MOUSE_SENSITIVITY
                     , 0);
 
         }
+        else if (mouse.isLeftButtonPressed()){
+            Vector2f rotVec = mouse.getDisplVec();
+            camera.moveRotation(rotVec.x * MOUSE_SENSITIVITY, 0, rotVec.y * MOUSE_SENSITIVITY);
+        }
 
-        hud.updateWithPosition(interval, movableEntity.getRotation());
+        hud.updateWithPosition(interval, camera.getRotation());
 
         // Update directional light direction, intensity and colour
         directionalLight.getDirection().x =  -1;

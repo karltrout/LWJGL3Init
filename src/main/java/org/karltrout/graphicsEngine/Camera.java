@@ -2,6 +2,7 @@ package org.karltrout.graphicsEngine;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
@@ -15,10 +16,16 @@ public class Camera implements ICamera {
     private final Vector3f rotation;
     private Vector3f location = new Vector3f();
     private Logger logger = LogManager.getLogger();
+    private final Matrix4f cameraAngle;
 
-    public Camera() {
+    public Matrix4f getCameraAngle() {
+        return cameraAngle;
+    }
+
+    public Camera( ) {
         this.position = new Vector3f(0,0,0);
         this.rotation = new Vector3f(0,0,0);
+        cameraAngle = new Matrix4f();
     }
 
     public void setLocation(Vector3f latitudeLongitudeAltitude){
@@ -77,8 +84,12 @@ public class Camera implements ICamera {
 
     public void moveRotation(float offsetX, float offsetY, float offsetZ) {
         rotation.x += offsetX;
-        rotation.y += offsetY;
-        rotation.z += offsetZ;
+        rotation.y += offsetZ;
+        rotation.z += offsetY;
+
+        cameraAngle.rotateLocalX((float) Math.toRadians(offsetX));
+        cameraAngle.rotateLocalY((float) Math.toRadians(offsetY));
+        cameraAngle.rotateLocalZ((float) Math.toRadians(offsetZ));
     }
 
 }

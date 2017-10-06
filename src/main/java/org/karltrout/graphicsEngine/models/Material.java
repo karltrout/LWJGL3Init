@@ -25,7 +25,7 @@ public class Material {
         this.diffuseColour = DEFAULT_COLOUR;
         this.specularColour = DEFAULT_COLOUR;
         this.texture = false;
-        this.reflectance = .75f;
+        this.reflectance = .45f;
     }
 
     public Material(Vector4f colour, float reflectance) {
@@ -81,7 +81,7 @@ public class Material {
     }
 
     public boolean isTextured() {
-        return this.texture;
+        return this.texture ;
     }
 
     public void setTexture(boolean texture) {

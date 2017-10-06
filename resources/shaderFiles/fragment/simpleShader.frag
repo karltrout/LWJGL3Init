@@ -125,8 +125,6 @@ void main()
 {
     setupColours(material, outTexCoord);
     vec4 diffuseSpecularComp = calcDirectionalLight(directionalLight, mvVertexPos, mvVertexNormal);
-        //diffuseSpecularComp += calcPointLight(pointLight, mvVertexPos, mvVertexNormal);
-
-        fragColor = ambientC * vec4(ambientLight, 1) + diffuseSpecularComp;
+    fragColor = ambientC * vec4(ambientLight, 1) + diffuseSpecularComp;
 
 }
