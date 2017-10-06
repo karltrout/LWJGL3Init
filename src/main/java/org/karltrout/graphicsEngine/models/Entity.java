@@ -24,11 +24,6 @@ public class Entity {
     private Location location;
     private int cullFace = GL11.GL_BACK;
     private int frontFace = GL11.GL_CCW;
-
-    public Matrix4f getModelMatrix() {
-        return modelMatrix;
-    }
-
     private Matrix4f modelMatrix = new Matrix4f().identity();
 
     private int minAltitude = 0;
@@ -67,6 +62,7 @@ public class Entity {
         this.rotation.x = x;
         this.rotation.y = y;
         this.rotation.z = z;
+        modelMatrix.rotateX(x).rotateY(y).rotateZ(z);
     }
 
     public void moveRotation(float offsetX, float offsetY, float offsetZ) {
@@ -134,6 +130,14 @@ public class Entity {
 
     public void setFrontFace(int frontFace) {
         this.frontFace = frontFace;
+    }
+
+    public Matrix4f getModelMatrix() {
+        return modelMatrix;
+    }
+
+    public void setWorldPosition(){
+        modelMatrix.lookAt(this.position, new Vector3f(), new Vector3f(0,1,0) );
     }
 
 }

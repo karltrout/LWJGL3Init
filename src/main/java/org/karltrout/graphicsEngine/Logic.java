@@ -68,7 +68,7 @@ public class Logic implements ILogic {
             Mesh ellipsoid =  ReferenceEllipsoid.referenceElipsoidMesh().build();
             Entity planetEarth = new Entity(ellipsoid);
             planetEarth.setScale(scaleFactor);
-            planetEarth.makeWireFrame(true);
+            planetEarth.makeWireFrame(false);
 
             entities.add(planetEarth);
 
@@ -81,7 +81,7 @@ public class Logic implements ILogic {
             terrainEntity.setMaxAltitude(15000);
             terrainEntity.setScale(scaleFactor);
             terrainEntity.makeWireFrame(false);
-           // entities.add(terrainEntity);
+            entities.add(terrainEntity);
             fltFileReader = null;
             geoTerrainMesh = null;
 
@@ -95,7 +95,7 @@ public class Logic implements ILogic {
             terrainEntity112.setMaxAltitude(15000);
             terrainEntity112.setScale(scaleFactor );
             terrainEntity112.makeWireFrame(false);
-           // entities.add(terrainEntity112);
+            entities.add(terrainEntity112);
             fltFileReader112 = null;
             geoTerrainMesh112 = null;
 
@@ -126,26 +126,31 @@ public class Logic implements ILogic {
             bunny.setPosition(bunnySpot.x , bunnySpot.y, bunnySpot.z );
             entities.add(bunny);
 
-            movableEntity = bunny;
+           // movableEntity = bunny;
 
             objLoader = new OBJLoader();
             Mesh terminal = objLoader.loadObjModel("kphx",textureData );
             terminal.setMaterial(new Material(new Vector4f(1f,0f,1f,1f), 1.0f));
             Entity terminalEntity = new Entity(terminal);
             terminalEntity.makeWireFrame(false);
+            //terminalEntity.setScale(.1f);
 
-            terminalEntity.setScale(0.1f);
+            terminalEntity.setRotation(-79, 129, 13);
             /*
                 Latitude: 	33-25.863480N
                 Longitude: 	112-01.626082W
                 Elevation: 	1110.1 ft.
              */
-            float terminalAltitude = 8500.0f;// * 0.3048f; 33.428817, -112.026486
+            float terminalAltitude = 20500.0f;// * 0.3048f; 33.428817, -112.026486
             Vector3f terminalPosition = ReferenceEllipsoid.cartesianCoordinates(33.428817, -112.026486, altitude).mul(scaleFactor);
             logger.info("Terminal Position: "+terminalPosition);
 
             terminalEntity.setPosition(terminalPosition.x , terminalPosition.y, terminalPosition.z );
+           // terminalEntity.setWorldPosition();
+
             entities.add(terminalEntity);
+
+            movableEntity = terminalEntity;
 
             //ShapeFileTerrainMesh sftm = new ShapeFileTerrainMesh();
             //sftm.addFltFiles(fltFileReader);
@@ -330,7 +335,7 @@ public class Logic implements ILogic {
             camera.moveRotation(rotVec.x * MOUSE_SENSITIVITY, 0, rotVec.y * MOUSE_SENSITIVITY);
         }
 
-        hud.updateWithPosition(interval, camera.getRotation());
+        hud.updateWithPosition(interval, movableEntity.getRotation());
 
         // Update directional light direction, intensity and colour
         directionalLight.getDirection().x =  -1;
