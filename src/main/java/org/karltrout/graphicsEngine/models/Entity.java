@@ -1,5 +1,7 @@
 package org.karltrout.graphicsEngine.models;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector2f;
@@ -31,6 +33,7 @@ public class Entity {
 
     private int minAltitude = 0;
     private int maxAltitude = 120000000;
+    private Logger logger = LogManager.getLogger();
 
     public Entity(Renderable renderable) {
         this.renderable = renderable;
@@ -47,6 +50,14 @@ public class Entity {
         this.position.x = x;
         this.position.y = y;
         this.position.z = z;
+        calculateRotation();
+    }
+
+    private void calculateRotation() {
+       double z = Math.atan((double)position.x/(double)position.y);
+       double y = Math.atan((double)position.x/(double)position.z);
+       double x = 3.142 +  Math.atan((double)position.y /(double)position.z);
+       logger.info("Entity X Rot: "+Math.toDegrees(x)+" Y Rot: "+Math.toDegrees(y)+" Z Rot: "+Math.toDegrees(z));
     }
 
     public float getScale() {
@@ -68,7 +79,7 @@ public class Entity {
 
     }
 
-    public void moveRotation(float offsetX, float offsetY, float offsetZ) {
+    public void  moveRotation(float offsetX, float offsetY, float offsetZ) {
         rotation.x += offsetX;
         rotation.y += offsetY;
         rotation.z += offsetZ;

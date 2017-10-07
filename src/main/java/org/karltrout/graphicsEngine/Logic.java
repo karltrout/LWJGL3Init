@@ -185,8 +185,6 @@ public class Logic implements ILogic {
             logger.debug("camera Position: "+camera.getPosition());
             logger.debug("camera location: "+ camera.getLocation());
 
-            hud.updateWithPosition(0, camera.getRotation());
-
             ambientLight = new Vector3f(0.2f, 0.2f, 0.2f);
             Vector3f lightColour = new Vector3f(1, 1, 1);
             Vector3f lightPosition = new Vector3f(0, 0, 1);
