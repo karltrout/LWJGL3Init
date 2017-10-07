@@ -119,38 +119,39 @@ public class Logic implements ILogic {
                 Longitude: 	112-01.626082W
                 Elevation: 	1110.1 ft.
              */
-            float altitude = 4110.1f;// * 0.3048f; 33.428817, -112.026486
-            Vector3f bunnySpot = ReferenceEllipsoid.cartesianCoordinates(33.428817, -112.026486, altitude).mul(scaleFactor);
+            float altitude = 3450.0f;// * 0.3048f; 33.428817, -112.026486
+            Vector3f bunnySpot = ReferenceEllipsoid.cartesianCoordinates(33.428817, -112.005486, altitude).mul(scaleFactor);
             logger.info("Bunny Position: "+bunnySpot);
 
             bunny.setPosition(bunnySpot.x , bunnySpot.y, bunnySpot.z );
+            bunny.moveRotation(54f,-18f,80f);
             entities.add(bunny);
 
            // movableEntity = bunny;
 
             objLoader = new OBJLoader();
             Mesh terminal = objLoader.loadObjModel("kphx",textureData );
-            terminal.setMaterial(new Material(new Vector4f(1f,0f,1f,1f), 1.0f));
+            terminal.setMaterial(new Material(new Vector4f(1f,.5f,1f,1f), 1.0f));
             Entity terminalEntity = new Entity(terminal);
             terminalEntity.makeWireFrame(false);
-            //terminalEntity.setScale(.1f);
-
-            terminalEntity.setRotation(-79, 129, 13);
+            terminalEntity.setScale(.1f);
             /*
                 Latitude: 	33-25.863480N
                 Longitude: 	112-01.626082W
                 Elevation: 	1110.1 ft.
              */
-            float terminalAltitude = 20500.0f;// * 0.3048f; 33.428817, -112.026486
-            Vector3f terminalPosition = ReferenceEllipsoid.cartesianCoordinates(33.428817, -112.026486, altitude).mul(scaleFactor);
+            float terminalAltitude = 3400.0f;// * 0.3048f; 33.428817, -112.026486
+            Vector3f terminalPosition = ReferenceEllipsoid.cartesianCoordinates(33.425817, -112.003486, terminalAltitude).mul(scaleFactor);
             logger.info("Terminal Position: "+terminalPosition);
 
             terminalEntity.setPosition(terminalPosition.x , terminalPosition.y, terminalPosition.z );
+
+            terminalEntity.moveRotation(149f,-12f,18.5f);
            // terminalEntity.setWorldPosition();
 
             entities.add(terminalEntity);
 
-            movableEntity = terminalEntity;
+            movableEntity = bunny;
 
             //ShapeFileTerrainMesh sftm = new ShapeFileTerrainMesh();
             //sftm.addFltFiles(fltFileReader);
@@ -214,6 +215,8 @@ public class Logic implements ILogic {
     public void input(Window window, Mouse mouse) {
 
         float travel = (float) (zoomSpd /60 /60 /KILOMETERS_PER_LATITUDE_DEGREE);
+
+        if( window.isKeyPressed(GLFW_KEY_RIGHT_CONTROL)) {travel /= 10;}
 
         if(!window.isKeyPressed(GLFW_KEY_RIGHT_ALT)) {
 

@@ -1,11 +1,14 @@
 package org.karltrout.graphicsEngine.models;
 
 import org.joml.Matrix4f;
+import org.joml.Quaternionf;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.karltrout.graphicsEngine.Location;
 import org.karltrout.graphicsEngine.terrains.fltFile.TerrainMesh;
 import org.lwjgl.opengl.GL11;
+
+import java.text.NumberFormat;
 
 /**
  * An Object in the World.
@@ -62,13 +65,16 @@ public class Entity {
         this.rotation.x = x;
         this.rotation.y = y;
         this.rotation.z = z;
-        modelMatrix.rotateX(x).rotateY(y).rotateZ(z);
+
     }
 
     public void moveRotation(float offsetX, float offsetY, float offsetZ) {
         rotation.x += offsetX;
         rotation.y += offsetY;
         rotation.z += offsetZ;
+        this.modelMatrix.rotateX((float)Math.toRadians(offsetX));
+        this.modelMatrix.rotateY((float)Math.toRadians(offsetY));
+        this.modelMatrix.rotateZ((float)Math.toRadians(offsetZ));
     }
 
     public Renderable getRenderable() {
@@ -137,7 +143,11 @@ public class Entity {
     }
 
     public void setWorldPosition(){
-        modelMatrix.lookAt(this.position, new Vector3f(), new Vector3f(0,1,0) );
+        double tanX = Math.atan(position.y/position.z);
+        double tanY = Math.atan(position.x/position.z);
+        System.out.println("X: "+Math.toDegrees(tanX)+" Y: "+Math.toDegrees(tanY));
+//        modelMatrix.lookAt(this.position, new Vector3f(), new Vector3f(0,1,0) );
     }
+
 
 }

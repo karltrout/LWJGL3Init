@@ -55,7 +55,7 @@ public class Transformation {
     }
 
     public Matrix4f getModelViewMatrix(Entity entity, Matrix4f viewMatrix) {
-        Matrix4f modelMatrix = entity.getModelMatrix();
+        Matrix4f modelMatrix = new Matrix4f(entity.getModelMatrix());
         modelViewMatrix.identity().translate(entity.getPosition()).scale(entity.getScale());
         Matrix4f viewCurr = new Matrix4f(viewMatrix);
         return viewCurr.mul(modelViewMatrix).mul(modelMatrix);
