@@ -220,8 +220,11 @@ public class Logic implements ILogic {
     public void input(Window window, Mouse mouse) {
 
         float travel = (float) (zoomSpd /60 /60 /KILOMETERS_PER_LATITUDE_DEGREE);
+        float localZoomSpd = zoomSpd;
 
-        if( window.isKeyPressed(GLFW_KEY_RIGHT_CONTROL)) {travel /= 10;}
+
+        if( window.isKeyPressed(GLFW_KEY_RIGHT_CONTROL)) {travel /= 10;
+            localZoomSpd = zoomSpd / 10;}
 
         if(!window.isKeyPressed(GLFW_KEY_RIGHT_ALT)) {
 
@@ -260,12 +263,12 @@ public class Logic implements ILogic {
             }
 
             if (window.isKeyPressed(GLFW_KEY_Z)) {
-                cameraInc.z -= zoomSpd;
-                cameraLoc.z -= zoomSpd;
+                cameraInc.z -= localZoomSpd;
+                cameraLoc.z -= localZoomSpd;
                 if (cameraLoc.z < MIN_HEIGHT) cameraLoc.z = MIN_HEIGHT;
             } else if (window.isKeyPressed(GLFW_KEY_X)) {
-                cameraInc.z += zoomSpd;
-                cameraLoc.z += zoomSpd;
+                cameraInc.z += localZoomSpd;
+                cameraLoc.z += localZoomSpd;
             }
             adjustCameraSpdBasedOnheight(cameraLoc.z);
         }
