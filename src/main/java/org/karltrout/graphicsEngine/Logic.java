@@ -68,7 +68,7 @@ public class Logic implements ILogic {
             Mesh ellipsoid =  ReferenceEllipsoid.referenceElipsoidMesh().build();
             Entity planetEarth = new Entity(ellipsoid);
             planetEarth.setScale(scaleFactor);
-            planetEarth.makeWireFrame(false);
+            planetEarth.makeWireFrame(true);
 
             entities.add(planetEarth);
 
@@ -102,14 +102,7 @@ public class Logic implements ILogic {
             OBJLoader objLoader = new OBJLoader();
 
             Path bunnyTexture = Paths.get("resources/models/a380_AIRBUS.png");
-            //URL bunnyTexture = this.getClass().getResource(planetImg.);
-            //File is = bunnyTexture.toFile();
-            FileInputStream fis = new FileInputStream(bunnyTexture.toFile());
             TextureData textureData = OpenGLLoader.decodeTextureFile(bunnyTexture);
-
-          //  OpenGLLoader loader = new OpenGLLoader();
-         //   int textureId = loader.loadTexture("bunny3");
-
             Mesh model = objLoader.loadObjModel("A380",textureData );
             Entity bunny = new Entity(model);
             bunny.makeWireFrame(false);
@@ -119,15 +112,13 @@ public class Logic implements ILogic {
                 Longitude: 	112-01.626082W
                 Elevation: 	1110.1 ft.
              */
-            float altitude = 3450.0f;// * 0.3048f; 33.428817, -112.026486
+            float altitude = 3600.0f;
             Vector3f bunnySpot = ReferenceEllipsoid.cartesianCoordinates(33.428817, -112.005486, altitude).mul(scaleFactor);
             logger.info("Bunny Position: "+bunnySpot);
 
             bunny.setPosition(bunnySpot.x , bunnySpot.y, bunnySpot.z );
             bunny.moveRotation(54f,-18f,80f);
             entities.add(bunny);
-
-           // movableEntity = bunny;
 
             objLoader = new OBJLoader();
             Mesh terminal = objLoader.loadObjModel("kphx",textureData );
@@ -140,18 +131,34 @@ public class Logic implements ILogic {
                 Longitude: 	112-01.626082W
                 Elevation: 	1110.1 ft.
              */
-            float terminalAltitude = 3400.0f;// * 0.3048f; 33.428817, -112.026486
+            float terminalAltitude = 3400.0f;
             Vector3f terminalPosition = ReferenceEllipsoid.cartesianCoordinates(33.425817, -112.003486, terminalAltitude).mul(scaleFactor);
             logger.info("Terminal Position: "+terminalPosition);
 
             terminalEntity.setPosition(terminalPosition.x , terminalPosition.y, terminalPosition.z );
-
             terminalEntity.moveRotation(149f,-12f,18.5f);
-           // terminalEntity.setWorldPosition();
-
             entities.add(terminalEntity);
 
-            movableEntity = bunny;
+            Path hiResTexture = Paths.get("resources/models/kphx_hiRes.png");
+            TextureData hiResData = OpenGLLoader.decodeTextureFile(hiResTexture);
+            objLoader = new OBJLoader();
+            Mesh kphxHiRes = objLoader.loadObjModel("kphx_hiRes",hiResData );
+            Entity kphxHiResEntity = new Entity(kphxHiRes);
+            kphxHiResEntity.makeWireFrame(false);
+            kphxHiResEntity.setScale(800f);
+            /*
+                Latitude: 	33-25.863480N
+                Longitude: 	112-01.626082W
+                Elevation: 	1110.1 ft.
+             */
+            Vector3f hiresPosition = ReferenceEllipsoid.cartesianCoordinates(33.426817, -112.006486, terminalAltitude+1100).mul(scaleFactor);
+            logger.info("hiRes Position: "+terminalPosition);
+
+            kphxHiResEntity.setPosition(hiresPosition.x , hiresPosition.y, hiresPosition.z );
+            kphxHiResEntity.moveRotation(148.5f,-12f,18.5f);
+            entities.add(kphxHiResEntity);
+
+            movableEntity = kphxHiResEntity;
 
             //ShapeFileTerrainMesh sftm = new ShapeFileTerrainMesh();
             //sftm.addFltFiles(fltFileReader);
