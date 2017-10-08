@@ -111,9 +111,11 @@ public class Logic implements ILogic {
                 Latitude: 	33-25.863480N
                 Longitude: 	112-01.626082W
                 Elevation: 	1110.1 ft.
+                runway: 7L  33.431077, -112.026144
+                terminal gate: 33.428817, -112.005486
              */
             float altitude = 3600.0f;
-            Vector3f bunnySpot = ReferenceEllipsoid.cartesianCoordinates(33.428817, -112.005486, altitude).mul(scaleFactor);
+            Vector3f bunnySpot = ReferenceEllipsoid.cartesianCoordinates(33.431077, -112.026144, altitude).mul(scaleFactor);
             logger.info("Bunny Position: "+bunnySpot);
 
             bunny.setPosition(bunnySpot.x , bunnySpot.y, bunnySpot.z );
@@ -155,7 +157,7 @@ public class Logic implements ILogic {
             logger.info("hiRes Position: "+terminalPosition);
 
             kphxHiResEntity.setPosition(hiresPosition.x , hiresPosition.y, hiresPosition.z );
-            kphxHiResEntity.moveRotation(148.5f,-12f,18.5f);
+            kphxHiResEntity.moveRotation(148.75f,-12f,18.75f);
             entities.add(kphxHiResEntity);
 
             movableEntity = kphxHiResEntity;
@@ -223,7 +225,7 @@ public class Logic implements ILogic {
         float localZoomSpd = zoomSpd;
 
 
-        if( window.isKeyPressed(GLFW_KEY_RIGHT_CONTROL)) {travel /= 10;
+        if( window.isKeyPressed(GLFW_KEY_RIGHT_SHIFT)) {travel /= 10;
             localZoomSpd = zoomSpd / 10;}
 
         if(!window.isKeyPressed(GLFW_KEY_RIGHT_ALT)) {
