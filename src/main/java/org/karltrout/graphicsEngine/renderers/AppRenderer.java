@@ -5,6 +5,7 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 import org.karltrout.graphicsEngine.Camera;
+import org.karltrout.graphicsEngine.Mouse;
 import org.karltrout.graphicsEngine.Timer;
 import org.karltrout.graphicsEngine.Window;
 import org.karltrout.graphicsEngine.models.*;
@@ -25,6 +26,7 @@ public class AppRenderer {
     private DefaultShader appShader;
     private HudShader hudShader;
     private Camera camera;
+    private Mouse mouse;
 
     private static final float FOV = (float) Math.toRadians(60);
     private static final float NEAR_PLANE = .5f;
@@ -86,6 +88,7 @@ public class AppRenderer {
         // Update projection Matrix
         Matrix4f projectionMatrix =
                 transformation.getProjectionMatrix(FOV, window.getWidth(), window.getHeight(), NEAR_PLANE, FAR_PLANE);
+
         appShader.setUniform("projectionMatrix", projectionMatrix);
         appShader.setUniform("texture_sampler", 0);
 
@@ -95,7 +98,11 @@ public class AppRenderer {
         appShader.setUniform("ambientLight", ambientLight);
         appShader.setUniform("specularPower", specularPower);
 
+
+        camera.calculateRayPicker(window, mouse.getDisplayPosition(), projectionMatrix, viewMatrix);
+
         // Get a copy of the point light object and transform its position to view coordinates
+        /*
         PointLight currPointLight = new PointLight(pointLight);
         Vector3f lightPos = currPointLight.getPosition();
         Vector4f aux = new Vector4f(lightPos, 1);
@@ -103,6 +110,7 @@ public class AppRenderer {
         lightPos.x = aux.x;
         lightPos.y = aux.y;
         lightPos.z = aux.z;
+        */
         //appShader.setUniform("pointLight", currPointLight);
 
         // Get a copy of the directional light object and transform its position to view coordinates
@@ -116,7 +124,6 @@ public class AppRenderer {
         for(Entity entity : entities) {
 
             if ( camera.getLocation().z * entity.getScale()  > entity.getMaxAltitude()) {
-                //logger.debug("camera Altitude: "+(camera.getLocation().z * entity.getScale() )+" entity Altitude: "+entity.getMaxAltitude());
                 continue;
             }
 
@@ -156,8 +163,9 @@ public class AppRenderer {
 
     }
 
-    public void init() throws Exception{
+    public void init(Mouse mouse) throws Exception{
 
+        this.mouse = mouse;
         appShader = new DefaultShader();
 
         transformation = new Transformation();

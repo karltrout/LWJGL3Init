@@ -12,9 +12,7 @@ import org.karltrout.graphicsEngine.models.*;
 import org.karltrout.graphicsEngine.renderers.AppRenderer;
 import org.karltrout.graphicsEngine.terrains.fltFile.FltFileReader;
 import org.karltrout.graphicsEngine.textures.TextureData;
-import org.lwjgl.opengl.GL11;
 
-import java.io.FileInputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -50,6 +48,7 @@ public class Logic implements ILogic {
     private float spdMultiplyer = 4.0f;
 
     private Entity movableEntity;
+    private Mouse mouse;
 
     public Logic() throws Exception {
         camera = new Camera();
@@ -58,9 +57,10 @@ public class Logic implements ILogic {
     }
 
     @Override
-    public void init() throws Exception {
+    public void init(Mouse mouse) throws Exception {
 
-        renderer.init();
+        this.mouse = mouse;
+        renderer.init(mouse);
 
         //Add Terrain data to OPEN GL
         try {
@@ -219,7 +219,7 @@ public class Logic implements ILogic {
     }
 
     @Override
-    public void input(Window window, Mouse mouse) {
+    public void input(Window window) {
 
         float travel = (float) (zoomSpd /60 /60 /KILOMETERS_PER_LATITUDE_DEGREE);
         float localZoomSpd = zoomSpd;
@@ -324,7 +324,7 @@ public class Logic implements ILogic {
     }
 
     @Override
-    public void update(float interval, Mouse mouse) {
+    public void update(float interval) {
         // Update camera position
         if (cameraInc.length() > 0) {
             Vector3f p = ReferenceEllipsoid.cartesianCoordinates(cameraLoc.x, cameraLoc.y,  cameraLoc.z);
@@ -338,13 +338,13 @@ public class Logic implements ILogic {
         // Update camera based on mouse
         if (mouse.isRightButtonPressed()) {
 
-            Vector2f rotVec = mouse.getDisplVec();
+            Vector2f rotVec = mouse.getDisplayVector();
             camera.moveRotation(rotVec.x * MOUSE_SENSITIVITY, rotVec.y * MOUSE_SENSITIVITY
                     , 0);
 
         }
         else if (mouse.isLeftButtonPressed()){
-            Vector2f rotVec = mouse.getDisplVec();
+            Vector2f rotVec = mouse.getDisplayVector();
             camera.moveRotation(rotVec.x * MOUSE_SENSITIVITY, 0, rotVec.y * MOUSE_SENSITIVITY);
         }
 
@@ -398,6 +398,11 @@ public class Logic implements ILogic {
         for (Entity entity : entities) {
             entity.getRenderable().cleanUp();
         }
+    }
+
+    @Override
+    public void setMouse(Mouse mouse) {
+        this.mouse = mouse;
     }
 
     private Primitive makeLongitudeLineAt(int latitude){

@@ -2,9 +2,10 @@ package org.karltrout.graphicsEngine;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.joml.Matrix4f;
-import org.joml.Vector3f;
+import org.joml.*;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+
+import java.lang.Math;
 
 /**
  * blah rewrite for position
@@ -90,6 +91,26 @@ public class Camera implements ICamera {
         cameraAngle.rotateLocalX((float) Math.toRadians(offsetX));
         cameraAngle.rotateLocalY((float) Math.toRadians(offsetY));
         cameraAngle.rotateLocalZ((float) Math.toRadians(offsetZ));
+    }
+
+    public Vector3f calculateRayPicker(Window window, Vector2d mousePosition, Matrix4f projectionMatrix, Matrix4f viewMatrix){
+
+        //Normalize mouse position
+        float x = (float)(2.0f * mousePosition.x) / window.getWidth() - 1f;
+        float y = (float)(2.0f * mousePosition.y) / window.getHeight() - 1f;
+        Vector4f clipCoords = new Vector4f(x, y, -1.0f, 1.0f);
+        //copy the matrixes
+        //convert to eye Coordinates. This is where the camera is looking at using the projection matrix
+        Vector4f eyeCoords = new Matrix4f(projectionMatrix).invert().transform(clipCoords);
+        eyeCoords = new Vector4f(eyeCoords.x, eyeCoords.y, -1f, 0f);
+        //Convert this to the World Coordinates. This is where in the work the ray is pointing to.
+        Vector4f rayWorld = new Matrix4f(viewMatrix).invert().transform(eyeCoords);
+        Vector3f mouseRay = new Vector3f(rayWorld.x, rayWorld.y, rayWorld.z);
+        mouseRay.normalize();
+
+        //logger.info("Mouse ray X: "+mouseRay.x+", Y: "+mouseRay.y+", Z: "+mouseRay.z);
+
+        return mouseRay;
     }
 
 }

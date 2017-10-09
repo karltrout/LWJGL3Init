@@ -28,7 +28,7 @@ public class ThreeDeeModeler implements Runnable {
         window = new Window(windowTitle, width, height, vsSync);
         mouse = new Mouse();
         this.envLogic = logic;
-
+        logic.setMouse(this.mouse);
         timer = new Timer();
     }
 
@@ -69,13 +69,13 @@ public class ThreeDeeModeler implements Runnable {
 
         window.init();
         mouse.init(window);
-        envLogic.init();
+        envLogic.init(mouse);
 
     }
 
     protected void input() {
         mouse.input(window);
-        envLogic.input(window, mouse);
+        envLogic.input(window);
     }
 
     private void loop(){
@@ -120,7 +120,7 @@ public class ThreeDeeModeler implements Runnable {
 
 
     protected void update(float interval) {
-        envLogic.update(interval, mouse);
+        envLogic.update(interval);
     }
 
 

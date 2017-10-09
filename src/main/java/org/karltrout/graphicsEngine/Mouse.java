@@ -35,9 +35,14 @@ public class Mouse
             ;
         });
     }
-    public Vector2f getDisplVec() {
+    public Vector2f getDisplayVector() {
         return displVec;
     }
+
+    public Vector2d getDisplayPosition(){
+            return (inWindow)?currentPos: new Vector2d();
+    }
+
     public void input(Window window) {
         displVec.x = 0;
         displVec.y = 0;
