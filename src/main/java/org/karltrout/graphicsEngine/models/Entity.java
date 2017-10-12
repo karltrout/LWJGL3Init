@@ -35,6 +35,7 @@ public class Entity {
     private float radius = 3f;
 
     private boolean selectable = false;
+    private boolean selected = false;
 
     public Entity(Renderable renderable) {
         this.renderable = renderable;
@@ -200,5 +201,13 @@ logger.info("U: "+u+" puv: "+puv);
 
     public boolean isSelectable() {
         return selectable;
+    }
+
+    public void setSelected(boolean selected) {
+        this.selected = selected;
+    }
+
+    public boolean isSelected() {
+        return selected;
     }
 }

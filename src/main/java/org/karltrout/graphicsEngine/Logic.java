@@ -140,6 +140,7 @@ public class Logic implements ILogic {
 
             terminalEntity.setPosition(terminalPosition.x , terminalPosition.y, terminalPosition.z );
             terminalEntity.moveRotation(149f,-12f,18.5f);
+            terminalEntity.setSelectable(true);
             entities.add(terminalEntity);
 
             Path hiResTexture = Paths.get("resources/models/kphx_hiRes.png");
@@ -161,7 +162,7 @@ public class Logic implements ILogic {
             kphxHiResEntity.moveRotation(148.75f,-12f,18.75f);
             entities.add(kphxHiResEntity);
 
-            movableEntity = bunny;
+            movableEntity = terminalEntity;
 
             //ShapeFileTerrainMesh sftm = new ShapeFileTerrainMesh();
             //sftm.addFltFiles(fltFileReader);
@@ -326,6 +327,11 @@ public class Logic implements ILogic {
 
     @Override
     public void update(float interval) {
+        //check to see if anything is selecteted
+        for (Entity entity : entities) {
+            movableEntity = (entity.isSelected())? entity: movableEntity;
+        }
+
         // Update camera position
         if (cameraInc.length() > 0) {
             Vector3f p = ReferenceEllipsoid.cartesianCoordinates(cameraLoc.x, cameraLoc.y,  cameraLoc.z);

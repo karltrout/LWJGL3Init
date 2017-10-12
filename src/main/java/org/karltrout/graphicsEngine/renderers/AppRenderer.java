@@ -13,6 +13,9 @@ import org.karltrout.graphicsEngine.shaders.DefaultShader;
 import org.karltrout.graphicsEngine.shaders.HudShader;
 import org.lwjgl.opengl.GL11;
 
+import java.util.Arrays;
+
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_K;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL11.glPolygonMode;
 
@@ -124,12 +127,13 @@ public class AppRenderer {
         // Render each gameItem
         for(Entity entity : entities) {
 
-           // if(entity.isSelectable()) selectedColor = entity.getRenderable().getMaterial().getDiffuseColour();
-
             currDirLight.setColor(new Vector3f(1f,1f,1f));
-            if(entity.isSelectable() && entity.intersectedByRay(camera.getPosition(), ray)) {
-                logger.info(" Airplane HIT! " + entity.getPosition());
+            if(entity.isSelected() ||(entity.isSelectable() && entity.intersectedByRay(camera.getPosition(), ray))) {
                 currDirLight.setColor(new Vector3f(.75f,0f,0f));
+                if(window.isKeyPressed(GLFW_KEY_K)){
+                    entity.setSelected(true);
+                    Arrays.stream(entities).filter( entity1 -> !entity.equals( entity1 )).forEach(entity1 ->  entity1.setSelected(false));
+                }
             }
 
             appShader.setUniform("directionalLight", currDirLight);

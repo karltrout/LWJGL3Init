@@ -103,7 +103,7 @@ public class Camera implements ICamera {
 
         {
             Vector2f normalizedCoords = getNormalisedDeviceCoordinates((float)mousePosition.x, (float)mousePosition.y, window);
-           logger.info("Mouse Position :"+mousePosition);
+          // logger.info("Mouse Position :"+mousePosition );
             Vector4f clipCoords = new Vector4f(normalizedCoords.x, normalizedCoords.y, -1.0f, 1.0f);
             Vector4f eyeCoords = toEyeCoords(clipCoords, projectionMatrix);
             Vector3f worldRay = toWorldCoords(eyeCoords, viewMatrix);
