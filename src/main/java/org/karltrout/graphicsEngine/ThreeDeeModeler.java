@@ -133,7 +133,7 @@ public class ThreeDeeModeler implements Runnable {
         try {
 
             ILogic envLogic = new Logic();
-            ThreeDeeModeler engine = new ThreeDeeModeler("3D Modeler", 640, 480, true, envLogic);
+            ThreeDeeModeler engine = new ThreeDeeModeler("3D Modeler", 1080, 680, true, envLogic);
             engine.start();
 
         } catch (Exception excp) {

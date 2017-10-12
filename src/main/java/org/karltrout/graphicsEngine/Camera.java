@@ -99,8 +99,38 @@ public class Camera implements ICamera {
         cameraAngle.rotateLocalZ((float) Math.toRadians(offsetZ));
     }
 
-    public Vector3f calculateRayPicker(Window window, Vector2d mousePosition, Matrix4f projectionMatrix, Matrix4f viewMatrix){
+    public Vector3f calculateRayPicker(Window window, Vector2d mousePosition, Matrix4f projectionMatrix, Matrix4f viewMatrix)
 
+        {
+            Vector2f normalizedCoords = getNormalisedDeviceCoordinates((float)mousePosition.x, (float)mousePosition.y, window);
+           logger.info("Mouse Position :"+mousePosition);
+            Vector4f clipCoords = new Vector4f(normalizedCoords.x, normalizedCoords.y, -1.0f, 1.0f);
+            Vector4f eyeCoords = toEyeCoords(clipCoords, projectionMatrix);
+            Vector3f worldRay = toWorldCoords(eyeCoords, viewMatrix);
+            return worldRay;
+        }
+
+        private Vector3f toWorldCoords(Vector4f eyeCoords,Matrix4f viewMatrix) {
+            Matrix4f invertedView = new Matrix4f(viewMatrix).invert();
+            Vector4f rayWorld = invertedView.transform(eyeCoords);
+            Vector3f mouseRay = new Vector3f(rayWorld.x, rayWorld.y, rayWorld.z);
+            mouseRay.normalize();
+           // logger.info("Mouse Ray: "+mouseRay);
+            return mouseRay;
+        }
+
+        private Vector4f toEyeCoords(Vector4f clipCoords, Matrix4f projectionMatrix) {
+            Matrix4f invertedProjection = new Matrix4f(projectionMatrix).invert();
+            Vector4f eyeCoords = invertedProjection.transform(clipCoords);
+            return new Vector4f(eyeCoords.x, eyeCoords.y, -1f, 0f);
+        }
+
+        private Vector2f getNormalisedDeviceCoordinates(float mouseX, float mouseY, Window window) {
+            float x = (2.0f * mouseX) / window.getWidth() - 1f;
+            float y = (2.0f * mouseY) / window.getHeight() - 1f;
+            return new Vector2f(x, -y);
+        }
+        /*
         //Normalize mouse position
         float x = (float)(2.0f * mousePosition.x) / window.getWidth() - 1f;
         float y = (float)(2.0f * mousePosition.y) / window.getHeight() - 1f;
@@ -117,6 +147,7 @@ public class Camera implements ICamera {
         //logger.info("Mouse ray X: "+mouseRay.x+", Y: "+mouseRay.y+", Z: "+mouseRay.z);
 
         return mouseRay;
-    }
+        */
+
 
 }

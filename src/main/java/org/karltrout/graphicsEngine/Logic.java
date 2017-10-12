@@ -68,7 +68,7 @@ public class Logic implements ILogic {
             Mesh ellipsoid =  ReferenceEllipsoid.referenceElipsoidMesh().build();
             Entity planetEarth = new Entity(ellipsoid);
             planetEarth.setScale(scaleFactor);
-            planetEarth.makeWireFrame(true);
+            planetEarth.makeWireFrame(false);
 
             entities.add(planetEarth);
 
@@ -161,7 +161,7 @@ public class Logic implements ILogic {
             kphxHiResEntity.moveRotation(148.75f,-12f,18.75f);
             entities.add(kphxHiResEntity);
 
-            movableEntity = kphxHiResEntity;
+            movableEntity = bunny;
 
             //ShapeFileTerrainMesh sftm = new ShapeFileTerrainMesh();
             //sftm.addFltFiles(fltFileReader);
@@ -190,7 +190,7 @@ public class Logic implements ILogic {
             Vector3f cameraPos = ReferenceEllipsoid.cartesianCoordinates(33.427817, -112.026486, altitude+500).mul(scaleFactor);
 
             camera.moveTo(cameraPos.x  ,cameraPos.y ,cameraPos.z );
-            camera.moveRotation(  -90 + (-1 * cameraLoc.x),    -90 + (-1 * cameraLoc.y), 0 );
+            camera.moveRotation(  -100 + (-1 * cameraLoc.x),    -85 + (-1 * cameraLoc.y), -10 );
 
             logger.debug("camera Position: "+camera.getPosition());
             logger.debug("camera location: "+ camera.getLocation());

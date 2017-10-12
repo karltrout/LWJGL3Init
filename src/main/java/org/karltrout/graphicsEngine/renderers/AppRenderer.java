@@ -120,12 +120,19 @@ public class AppRenderer {
         currDirLight.setDirection(new Vector3f(dir.x, dir.y, dir.z));
         appShader.setUniform("directionalLight", currDirLight);
 
+        Vector4f selectedColor = null;
         // Render each gameItem
         for(Entity entity : entities) {
 
-            if(entity.isSelectable() && entity.intersectedByRay(camera.getPosition(), ray)){
-                logger.info(" Airplane HIT! "+entity.getPosition());
+           // if(entity.isSelectable()) selectedColor = entity.getRenderable().getMaterial().getDiffuseColour();
+
+            currDirLight.setColor(new Vector3f(1f,1f,1f));
+            if(entity.isSelectable() && entity.intersectedByRay(camera.getPosition(), ray)) {
+                logger.info(" Airplane HIT! " + entity.getPosition());
+                currDirLight.setColor(new Vector3f(.75f,0f,0f));
             }
+
+            appShader.setUniform("directionalLight", currDirLight);
 
             //TODO this is wrong... need to calculate altitude for camera not z...
             if ( camera.getLocation().z * entity.getScale()  > entity.getMaxAltitude()) {

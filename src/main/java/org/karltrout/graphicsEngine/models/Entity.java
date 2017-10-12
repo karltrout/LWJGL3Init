@@ -32,7 +32,7 @@ public class Entity {
     private int minAltitude = 0;
     private int maxAltitude = 120000000;
     private Logger logger = LogManager.getLogger();
-    private float radius = 50f;
+    private float radius = 3f;
 
     private boolean selectable = false;
 
