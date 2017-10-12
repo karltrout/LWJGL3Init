@@ -107,6 +107,7 @@ public class Logic implements ILogic {
             Entity bunny = new Entity(model);
             bunny.makeWireFrame(false);
             bunny.setScale(.10f);
+            bunny.setSelectable(true);
             /*
                 Latitude: 	33-25.863480N
                 Longitude: 	112-01.626082W

@@ -2,14 +2,12 @@ package org.karltrout.graphicsEngine.models;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.joml.Matrix4f;
-import org.joml.Quaternionf;
-import org.joml.Vector2f;
-import org.joml.Vector3f;
+import org.joml.*;
 import org.karltrout.graphicsEngine.Location;
 import org.karltrout.graphicsEngine.terrains.fltFile.TerrainMesh;
 import org.lwjgl.opengl.GL11;
 
+import java.lang.Math;
 import java.text.NumberFormat;
 
 /**
@@ -34,6 +32,9 @@ public class Entity {
     private int minAltitude = 0;
     private int maxAltitude = 120000000;
     private Logger logger = LogManager.getLogger();
+    private float radius = 50f;
+
+    private boolean selectable = false;
 
     public Entity(Renderable renderable) {
         this.renderable = renderable;
@@ -50,7 +51,14 @@ public class Entity {
         this.position.x = x;
         this.position.y = y;
         this.position.z = z;
-        calculateRotation();
+        //calculateRotation();
+    }
+
+    public void setPosition(Vector3f target) {
+        this.position.x = target.x;
+        this.position.y = target.y;
+        this.position.z = target.z;
+        //calculateRotation();
     }
 
     private void calculateRotation() {
@@ -161,4 +169,36 @@ public class Entity {
     }
 
 
+    public boolean intersectedByRay(Vector3f origin, Vector3f ray) {
+
+        Vector2f result = new Vector2f();
+        //logger.info("O: "+origin+" R:"+ray+" P:"+position+" r:"+radius);
+        Intersectionf.intersectRaySphere(origin, ray, position,radius*radius, result);
+
+        //logger.info("intersection: "+result);
+        return Intersectionf.intersectRaySphere(origin, ray, position,radius*radius, result);
+        /*Vector3f u = new Vector3f(origin).sub(position);
+        float puv = new Vector3f(ray).dot(u);
+logger.info("U: "+u+" puv: "+puv);
+        // is the point in front of the ray?
+        if ( puv > 0 ){
+            //compute distance from center of entity to the Ray
+            Vector3f pointOnRay = new Vector3f(ray).mul(new Vector3f(ray).dot(position));
+
+            Vector3f distOnRay = new Vector3f(origin).add(pointOnRay);
+            float rayToSphereLength = position.distance(distOnRay);
+            logger.info("Distance to point: "+ rayToSphereLength);
+            if(radius > rayToSphereLength ) return true;
+        }
+        //float c = (float) (distance.dot(distance) - Math.pow(this.radius, 2));
+*/
+    }
+
+    public void setSelectable(boolean selectable) {
+        this.selectable = selectable;
+    }
+
+    public boolean isSelectable() {
+        return selectable;
+    }
 }

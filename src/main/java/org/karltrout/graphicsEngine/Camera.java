@@ -48,6 +48,12 @@ public class Camera implements ICamera {
         position.z = z;
     }
 
+    public void moveToLocation (Vector3f target) {
+        position.x = target.x;
+        position.y = target.y;
+        position.z = target.z;
+    }
+
     @Override
     public void moveTo(float offsetX, float offsetY, float offsetZ) {
 

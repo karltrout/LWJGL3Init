@@ -99,7 +99,7 @@ public class AppRenderer {
         appShader.setUniform("specularPower", specularPower);
 
 
-        camera.calculateRayPicker(window, mouse.getDisplayPosition(), projectionMatrix, viewMatrix);
+        Vector3f ray = camera.calculateRayPicker(window, mouse.getDisplayPosition(), projectionMatrix, viewMatrix);
 
         // Get a copy of the point light object and transform its position to view coordinates
         /*
@@ -123,6 +123,11 @@ public class AppRenderer {
         // Render each gameItem
         for(Entity entity : entities) {
 
+            if(entity.isSelectable() && entity.intersectedByRay(camera.getPosition(), ray)){
+                logger.info(" Airplane HIT! "+entity.getPosition());
+            }
+
+            //TODO this is wrong... need to calculate altitude for camera not z...
             if ( camera.getLocation().z * entity.getScale()  > entity.getMaxAltitude()) {
                 continue;
             }
