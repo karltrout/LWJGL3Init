@@ -116,7 +116,7 @@ public class Logic implements ILogic {
                 terminal gate: 33.428817, -112.005486
              */
             float altitude = 3600.0f;
-            Vector3f bunnySpot = ReferenceEllipsoid.cartesianCoordinates(33.431077, -112.026144, altitude).mul(scaleFactor);
+            Vector3f bunnySpot = ReferenceEllipsoid.cartesianCoordinates(33.440879, -112.029549, altitude).mul(scaleFactor);
             logger.info("Bunny Position: "+bunnySpot);
 
             bunny.setPosition(bunnySpot.x , bunnySpot.y, bunnySpot.z );
@@ -125,7 +125,7 @@ public class Logic implements ILogic {
 
             objLoader = new OBJLoader();
             Mesh terminal = objLoader.loadObjModel("kphx",textureData );
-            terminal.setMaterial(new Material(new Vector4f(1f,.5f,1f,1f), 1.0f));
+            terminal.setMaterial(new Material(new Vector4f(.816f,.859f,.988f,1f), 1.0f));
             Entity terminalEntity = new Entity(terminal);
             terminalEntity.makeWireFrame(false);
             terminalEntity.setScale(.1f);
@@ -135,7 +135,7 @@ public class Logic implements ILogic {
                 Elevation: 	1110.1 ft.
              */
             float terminalAltitude = 3400.0f;
-            Vector3f terminalPosition = ReferenceEllipsoid.cartesianCoordinates(33.425817, -112.003486, terminalAltitude).mul(scaleFactor);
+            Vector3f terminalPosition = ReferenceEllipsoid.cartesianCoordinates(33.431517, -112.005486, terminalAltitude).mul(scaleFactor);
             logger.info("Terminal Position: "+terminalPosition);
 
             terminalEntity.setPosition(terminalPosition.x , terminalPosition.y, terminalPosition.z );
@@ -155,7 +155,7 @@ public class Logic implements ILogic {
                 Longitude: 	112-01.626082W
                 Elevation: 	1110.1 ft.
              */
-            Vector3f hiresPosition = ReferenceEllipsoid.cartesianCoordinates(33.426817, -112.006486, terminalAltitude+1100).mul(scaleFactor);
+            Vector3f hiresPosition = ReferenceEllipsoid.cartesianCoordinates(33.431917, -112.007986, terminalAltitude+1100).mul(scaleFactor);
             logger.info("hiRes Position: "+terminalPosition);
 
             kphxHiResEntity.setPosition(hiresPosition.x , hiresPosition.y, hiresPosition.z );
@@ -183,6 +183,9 @@ public class Logic implements ILogic {
                 int longitude = i - 180;
                 entities.add(new Entity(makeLatitudeLineAt(longitude)));
             }
+
+            entities.add(new Entity(makeLatitudeLineAt(247)));
+            entities.add(new Entity(makeLatitudeLineAt(248)));
 
             //set Camera initial start
             cameraLoc = new Vector3f(33.428817f, -112.026486f, altitude);
