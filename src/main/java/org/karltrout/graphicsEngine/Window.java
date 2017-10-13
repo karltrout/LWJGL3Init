@@ -4,6 +4,7 @@ import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.system.MemoryStack;
+import org.lwjgl.system.Platform;
 
 import java.nio.IntBuffer;
 
@@ -45,6 +46,9 @@ public class Window {
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
         glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+        if (Platform.get() == Platform.MACOSX) {
+            glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GLFW_FALSE);
+        }
 
 
         //size up the initial window
