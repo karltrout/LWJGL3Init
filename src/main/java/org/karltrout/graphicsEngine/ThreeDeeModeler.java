@@ -1,6 +1,7 @@
 package org.karltrout.graphicsEngine;
 
 import javafx.application.Application;
+import org.lwjgl.system.Platform;
 
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
@@ -33,8 +34,7 @@ public class ThreeDeeModeler implements Runnable {
     }
 
     private void start() {
-        String osName = System.getProperty("os.name");
-        if ( osName.contains("Mac") ) {
+        if (Platform.get() == Platform.MACOSX) {
             loopThread.run();
         } else {
             loopThread.start();
