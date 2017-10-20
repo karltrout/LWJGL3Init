@@ -24,6 +24,9 @@ import java.nio.charset.Charset;
  * Created by karltrout on 10/17/17.
  * Used for testing.
  * Generic UDP Client For testing
+ *
+ * Note: JVM Options:
+ * -Dlog4j.configurationFile=log4j2.xml -Djava.net.preferIPv4Stack=true
  */
 public class UdpClient implements Runnable {
 
@@ -47,9 +50,9 @@ public class UdpClient implements Runnable {
 
         final NioEventLoopGroup group = new NioEventLoopGroup();
         try {
-            NetworkInterface ni = NetworkInterface.getByInetAddress(NetUtil.LOCALHOST4);
+            NetworkInterface ni = NetworkInterface.getByInetAddress(NetUtil.LOCALHOST);
             final Bootstrap b = new Bootstrap();
-            b.group(group).channelFactory(() -> new NioDatagramChannel(InternetProtocolFamily.IPv4))
+            b.group(group).channelFactory(() -> new NioDatagramChannel())
             .option(ChannelOption.IP_MULTICAST_IF, ni)
             .option(ChannelOption.SO_REUSEADDR, true)
             .localAddress(NetUtil.LOCALHOST, port)

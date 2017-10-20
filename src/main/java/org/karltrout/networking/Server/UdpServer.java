@@ -15,6 +15,8 @@ import java.util.concurrent.Executors;
 /**
  * Created by karltrout on 10/17/17.
  * Test case.
+ * Note: JVM Options:
+ * -Dlog4j.configurationFile=log4j2.xml -Djava.net.preferIPv4Stack=true
  */
 public class UdpServer implements Runnable {
 
