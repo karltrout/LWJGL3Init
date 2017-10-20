@@ -8,10 +8,14 @@ import org.karltrout.networking.messaging.IMessage;
 import org.karltrout.networking.messaging.TimeMessage;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.*;
+import java.util.Collections;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Stream;
 
 /**
  * Created by karltrout on 10/17/17.
@@ -78,7 +82,9 @@ public class UdpServer implements Runnable {
         try{
             InetAddress group = InetAddress.getByName(groupAddress);
             multicastSocket = new MulticastSocket(port);
-            multicastSocket.setInterface(NetUtil.LOCALHOST);
+            NetworkInterface networkInterface = getLocalMultiCastInterface().get();
+            logger.info("Network Interface id is : " + networkInterface.getName());
+            multicastSocket.setNetworkInterface(networkInterface);
             multicastSocket.joinGroup(group);
         }
         catch (IOException e) {
@@ -132,6 +138,30 @@ public class UdpServer implements Runnable {
 
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    private Optional< NetworkInterface > getLocalMultiCastInterface() {
+        try {
+            return Collections.list(NetworkInterface.getNetworkInterfaces()).stream()
+                    .filter(networkInterface -> {
+                        try {
+                            return networkInterface.supportsMulticast();
+                        } catch (SocketException se) {
+                            throw new UncheckedIOException(se);
+                        }
+                    })
+                    .filter(networkInterface -> {
+                        try {
+                            return networkInterface.isUp();
+                        } catch (SocketException se) {
+                            throw new UncheckedIOException(se);
+                        }
+                    })
+                    .findFirst();
+
+        } catch (SocketException e) {
+            return Optional.of(NetUtil.LOOPBACK_IF);
         }
     }
 
