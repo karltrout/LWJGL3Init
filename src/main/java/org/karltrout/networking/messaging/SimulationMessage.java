@@ -1,28 +1,25 @@
-package org.karltrout.networking.Server;
-
-import org.karltrout.networking.IMessage;
+package org.karltrout.networking.messaging;
 
 import java.io.*;
-import java.util.GregorianCalendar;
 
 /**
- * Created by karltrout on 10/19/17.
+ * Base Message Class.
+ * Created by karltrout on 10/20/17.
  */
-public class TimeMessage implements IMessage, Serializable {
+public class SimulationMessage implements IMessage, Serializable {
 
     private Double time;
-
-    public TimeMessage() {
-    }
 
     @Override
     public byte[] asByteArray() {
 
         try(ByteArrayOutputStream byteArrayStream = new ByteArrayOutputStream()){
+
             ObjectOutput out = new ObjectOutputStream(byteArrayStream);
             out.writeObject(this);
             out.flush();
             return byteArrayStream.toByteArray();
+
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -35,7 +32,7 @@ public class TimeMessage implements IMessage, Serializable {
         this.time = time;
     }
 
-    public double getTime() {
-       return time;
-    }
+    @Override
+    public double getMessageTime() { return time; }
+
 }

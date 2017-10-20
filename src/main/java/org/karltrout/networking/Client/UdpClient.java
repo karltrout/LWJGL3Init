@@ -5,13 +5,12 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.DatagramPacket;
-import io.netty.channel.socket.InternetProtocolFamily;
 import io.netty.channel.socket.nio.NioDatagramChannel;
 import io.netty.util.NetUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.karltrout.graphicsEngine.Timer;
-import org.karltrout.networking.Server.TimeMessage;
+import org.karltrout.networking.messaging.TimeMessage;
 
 import java.io.ByteArrayInputStream;
 import java.io.ObjectInput;
@@ -106,7 +105,7 @@ public class UdpClient implements Runnable {
                 Object recievedObj = input.readObject();
                 if (recievedObj instanceof TimeMessage) {
                     TimeMessage msg = (TimeMessage) recievedObj;
-                    logger.info( "TimeMessage >>" + msg.getTime() + "<< From: " +
+                    logger.info( "TimeMessage >>" + msg.getMessageTime() + "<< From: " +
                                     srcAddr + " Time: " + timer.getElapsedTime());
                 } else {
                     logger.info(">>" + buf.toString(Charset.defaultCharset()) +
