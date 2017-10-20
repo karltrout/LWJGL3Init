@@ -1,62 +1,158 @@
 package org.karltrout.networking.Server;
 
-/**
- * Created by karltrout on 10/17/17.
- * Test case
- */
 import io.netty.util.NetUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.karltrout.graphicsEngine.Timer;
+import org.karltrout.networking.IMessage;
 
 import java.io.IOException;
 import java.net.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-public class UdpServer {
+/**
+ * Created by karltrout on 10/17/17.
+ * Test case.
+ */
+public class UdpServer implements Runnable {
 
     private final static Logger logger = LogManager.getLogger();
     private final static int port = 9956;
     private final static String groupAddress = "228.5.6.7";
+    private boolean running;
+    private ConcurrentLinkedQueue<IMessage> linkedQueue;
+    private int counter;
+    private Timer timer;
+    private double startTime;
+    private double staticsRate;
 
-    public UdpServer() {
-    }
+    private UdpServer() {}
 
     public static void main(String args[]){
 
-        byte[] buf = new byte[256];
+       Timer threadTimer = new Timer();
+       threadTimer.init();
 
+       UdpServer server = new UdpServer();
+
+       ExecutorService executor = Executors.newSingleThreadExecutor();
+       executor.submit(server);
+
+       float time = 0;
+       while (threadTimer.getTimeFromStart() < 120){
+
+           time = time + threadTimer.getElapsedTime();
+
+           try {
+               Thread.sleep(1);
+               if(time > 10){
+                   System.out.println("10 Secs. have past "+time);
+                   time = 0;
+               }
+           } catch (Exception e) {
+               e.printStackTrace();
+           }
+       }
+
+       System.out.println(String.format("Sent %d packets, with a rate of %f",
+               server.getCounter(), server.getStaticsRate()));
+       server.quit();
+
+       System.exit(1);
+    }
+
+    @Override
+    public void run() {
+        this.linkedQueue = new ConcurrentLinkedQueue<>();
+
+        this.timer = new Timer();
+        timer.init();
+        this.running = true;
         MulticastSocket multicastSocket = null;
+
         try{
             InetAddress group = InetAddress.getByName(groupAddress);
             multicastSocket = new MulticastSocket(port);
             multicastSocket.setInterface(NetUtil.LOCALHOST);
             multicastSocket.joinGroup(group);
-
         }
         catch (IOException e) {
             e.printStackTrace();
         }
 
-        buf= "hello World".getBytes();
-
         try {
             InetAddress multicastGroup = InetAddress.getByName(groupAddress);
-            DatagramPacket packet = new DatagramPacket(buf, buf.length, multicastGroup, port);
 
-            long startTime = System.nanoTime();
-            logger.info("START TIME: " + startTime / 1000_000_000.0);
+            startTime = timer.getTime();
+            logger.info("START TIME: " + startTime );
 
-            int x = 0;
-            while (x<1000000){
-                multicastSocket.send(packet);
-                x++;
+            byte[] buf = new byte[1024];
+            float time = 0;
+            IMessage message;
+
+            while(running){
+                time += timer.getElapsedTime();
+                if(time > 1){
+                  message = new TimeMessage();
+                  calculateStatus();
+                  time = 0;
+                }
+                else {
+                    message = linkedQueue.poll();
+                }
+
+                if(message != null && multicastSocket != null) {
+                    message.setMessageTime(timer.getTime());
+                    buf = message.asByteArray();
+                    DatagramPacket packet = new DatagramPacket(buf, buf.length, multicastGroup, port);
+                    multicastSocket.send(packet);
+                }
+                else{
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        logger.info("Server Messaging Idle, Thread interrupted.");
+                    }
+                }
             }
 
-            long endTime = System.nanoTime();
-            logger.info("END TIME: " + endTime / 1000_000_000.0);
-            logger.info("Time Delta: " + (endTime - startTime)/ 1000_000_000.0);
+            double endTime = timer.getTime();
+            logger.info("END TIME: " + endTime );
+            logger.info("Time Delta: " + (endTime - startTime));
+
+            if(multicastSocket != null && !multicastSocket.isClosed()) {
+                multicastSocket.close();
+                logger.info("Multicast server is closed.");
+            }
 
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private void quit(){
+        this.running = false;
+    }
+
+    public void queue(IMessage message){
+
+        linkedQueue.add(message);
+        calculateStatus();
+
+    }
+
+    private void calculateStatus(){
+        this.counter++;
+        this.staticsRate = (timer.getTime() - startTime) / counter;
+    }
+
+    public double getStaticsRate() {
+        return staticsRate;
+    }
+
+    public int getCounter() {
+        return counter;
     }
 }
