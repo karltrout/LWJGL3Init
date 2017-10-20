@@ -141,7 +141,7 @@ public class UdpServer implements Runnable {
         }
     }
 
-    private Optional< NetworkInterface > getLocalMultiCastInterface() {
+    private Optional< NetworkInterface > getLocalMultiCastInterface() throws UncheckedIOException {
         try {
             return Collections.list(NetworkInterface.getNetworkInterfaces()).stream()
                     .filter(networkInterface -> {
@@ -154,6 +154,13 @@ public class UdpServer implements Runnable {
                     .filter(networkInterface -> {
                         try {
                             return networkInterface.isUp();
+                        } catch (SocketException se) {
+                            throw new UncheckedIOException(se);
+                        }
+                    })
+                    .filter(networkInterface -> {
+                        try {
+                            return !networkInterface.isLoopback();
                         } catch (SocketException se) {
                             throw new UncheckedIOException(se);
                         }
