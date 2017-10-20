@@ -10,6 +10,7 @@ import io.netty.util.NetUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.karltrout.graphicsEngine.Timer;
+import org.karltrout.networking.NetworkUtilities;
 import org.karltrout.networking.messaging.TimeMessage;
 
 import java.io.ByteArrayInputStream;
@@ -49,7 +50,8 @@ public class UdpClient implements Runnable {
 
         final NioEventLoopGroup group = new NioEventLoopGroup();
         try {
-            NetworkInterface ni = NetworkInterface.getByInetAddress(NetUtil.LOCALHOST);
+            NetworkInterface ni = NetworkUtilities.getLocalMultiCastInterface().get();
+            logger.info("Network Interface Name: " + ni.getName());
             final Bootstrap b = new Bootstrap();
             b.group(group).channelFactory(() -> new NioDatagramChannel())
             .option(ChannelOption.IP_MULTICAST_IF, ni)
@@ -75,7 +77,7 @@ public class UdpClient implements Runnable {
             ch.joinGroup(multicastGroup, ni).sync();
             ch.closeFuture().await();
 
-        } catch (InterruptedException | SocketException e) {
+        } catch (InterruptedException e) {
             e.printStackTrace();
         } finally {
             logger.info("Do we need to clean anything up here?");

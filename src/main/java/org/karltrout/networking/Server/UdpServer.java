@@ -4,6 +4,7 @@ import io.netty.util.NetUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.karltrout.graphicsEngine.Timer;
+import org.karltrout.networking.NetworkUtilities;
 import org.karltrout.networking.messaging.IMessage;
 import org.karltrout.networking.messaging.TimeMessage;
 
@@ -82,7 +83,7 @@ public class UdpServer implements Runnable {
         try{
             InetAddress group = InetAddress.getByName(groupAddress);
             multicastSocket = new MulticastSocket(port);
-            NetworkInterface networkInterface = getLocalMultiCastInterface().get();
+            NetworkInterface networkInterface = NetworkUtilities.getLocalMultiCastInterface().get();
             logger.info("Network Interface id is : " + networkInterface.getName());
             multicastSocket.setNetworkInterface(networkInterface);
             multicastSocket.joinGroup(group);
@@ -138,37 +139,6 @@ public class UdpServer implements Runnable {
 
         } catch (IOException e) {
             e.printStackTrace();
-        }
-    }
-
-    private Optional< NetworkInterface > getLocalMultiCastInterface() throws UncheckedIOException {
-        try {
-            return Collections.list(NetworkInterface.getNetworkInterfaces()).stream()
-                    .filter(networkInterface -> {
-                        try {
-                            return networkInterface.supportsMulticast();
-                        } catch (SocketException se) {
-                            throw new UncheckedIOException(se);
-                        }
-                    })
-                    .filter(networkInterface -> {
-                        try {
-                            return networkInterface.isUp();
-                        } catch (SocketException se) {
-                            throw new UncheckedIOException(se);
-                        }
-                    })
-                    .filter(networkInterface -> {
-                        try {
-                            return !networkInterface.isLoopback();
-                        } catch (SocketException se) {
-                            throw new UncheckedIOException(se);
-                        }
-                    })
-                    .findFirst();
-
-        } catch (SocketException e) {
-            return Optional.of(NetUtil.LOOPBACK_IF);
         }
     }
 
