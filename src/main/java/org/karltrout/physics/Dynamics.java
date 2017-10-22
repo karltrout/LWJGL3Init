@@ -22,5 +22,17 @@ public class Dynamics {
         return initialVelocity + acceleration * secondsDelta;
     }
 
+    /**
+     * Aeronautical Drag:
+     * R = 1/2 * ρ * Cd * A * v^2
+     * ρ (rho) = density of Fluid (air)
+     * Cd = Coefficient of drag
+     * A = Surface Area
+     * v^2 = velocity squared
+     */
+    public double aeronauticalDrag(float rho, float Cd, float area, double velocity ){
+        return .5 * rho * Cd * area * (velocity * velocity);
+    }
+
 
 }
