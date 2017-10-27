@@ -1,4 +1,4 @@
-package org.karltrout.networking.Client;
+package org.karltrout.networking.client;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
@@ -11,6 +11,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.karltrout.graphicsEngine.Timer;
 import org.karltrout.networking.NetworkUtilities;
+import org.karltrout.networking.messaging.TakeoffMessage;
 import org.karltrout.networking.messaging.TimeMessage;
 
 import java.io.ByteArrayInputStream;
@@ -23,7 +24,7 @@ import java.nio.charset.Charset;
 /**
  * Created by karltrout on 10/17/17.
  * Used for testing.
- * Generic UDP Client For testing
+ * Generic UDP client For testing
  *
  * Note: JVM Options:
  * -Dlog4j.configurationFile=log4j2.xml -Djava.net.preferIPv4Stack=true
@@ -53,7 +54,7 @@ public class UdpClient implements Runnable {
             NetworkInterface ni = NetworkUtilities.getLocalMultiCastInterface().get();
             logger.info("Network Interface Name: " + ni.getName());
             final Bootstrap b = new Bootstrap();
-            b.group(group).channelFactory(() -> new NioDatagramChannel())
+            b.group(group).channelFactory(NioDatagramChannel::new)
             .option(ChannelOption.IP_MULTICAST_IF, ni)
             .option(ChannelOption.SO_REUSEADDR, true)
             .localAddress(NetUtil.LOCALHOST, port)
@@ -104,12 +105,17 @@ public class UdpClient implements Runnable {
             ByteArrayInputStream byteArrayStream = new ByteArrayInputStream(bytes);
 
             try(ObjectInput input = new ObjectInputStream(byteArrayStream)) {
-                Object recievedObj = input.readObject();
-                if (recievedObj instanceof TimeMessage) {
-                    TimeMessage msg = (TimeMessage) recievedObj;
+                Object receivedObj = input.readObject();
+                if (receivedObj instanceof TimeMessage) {
+                    TimeMessage msg = (TimeMessage) receivedObj;
                     logger.info( "TimeMessage >>" + msg.getMessageTime() + "<< From: " +
                                     srcAddr + " Time: " + timer.getElapsedTime());
-                } else {
+                } else if (receivedObj instanceof TakeoffMessage){
+                    TakeoffMessage msg = (TakeoffMessage) receivedObj;
+                    logger.info( "TakeoffMessage >>" + msg.getMessageTime() + "<< Speed " + msg.getSpeed()+ " From: " +
+                            srcAddr + " Time: " + timer.getElapsedTime());
+                }
+                else {
                     logger.info(">>" + buf.toString(Charset.defaultCharset()) +
                             "<< From: " + srcAddr + " Time: " + timer.getElapsedTime());
                 }

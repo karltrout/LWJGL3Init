@@ -1,22 +1,22 @@
-package org.karltrout.networking.Server;
+package org.karltrout.networking.server;
 
-import io.netty.util.NetUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.karltrout.graphicsEngine.Timer;
 import org.karltrout.networking.NetworkUtilities;
 import org.karltrout.networking.messaging.IMessage;
+import org.karltrout.networking.messaging.TakeoffMessage;
 import org.karltrout.networking.messaging.TimeMessage;
+import org.karltrout.physics.Dynamics;
 
 import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.net.*;
-import java.util.Collections;
-import java.util.Optional;
+import java.net.DatagramPacket;
+import java.net.InetAddress;
+import java.net.MulticastSocket;
+import java.net.NetworkInterface;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.stream.Stream;
 
 /**
  * Created by karltrout on 10/17/17.
@@ -40,31 +40,39 @@ public class UdpServer implements Runnable {
 
     public static void main(String args[]){
 
-       Timer threadTimer = new Timer();
-       threadTimer.init();
+       Timer timer = new Timer();
+       timer.init();
 
        UdpServer server = new UdpServer();
 
        ExecutorService executor = Executors.newSingleThreadExecutor();
        executor.submit(server);
 
-       float time = 0;
-       while (threadTimer.getTimeFromStart() < 120){
+        double time, drag;
+        double velocity = 0.0d;
+        float distance = 0f;
+        TakeoffMessage.Builder builder;
+        while (velocity < 77.17){ //150 Knots
 
-           time = time + threadTimer.getElapsedTime();
+            try { // take a break for a sec.
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
 
-           try {
-               Thread.sleep(1);
-               if(time > 10){
-                   System.out.println("10 Secs. have past "+time);
-                   time = 0;
-               }
-           } catch (Exception e) {
-               e.printStackTrace();
-           }
-       }
+            builder = new TakeoffMessage.Builder();
+            time = timer.getElapsedTime();
+            drag = Dynamics.aeronauticalDrag(10.13f, .018130f, 909.22f, velocity);
+            velocity = Dynamics.currentVelocity(velocity, (4*332300.0d * .7 ) - drag, 596000, time);  //596000 kg full weight
 
-       System.out.println(String.format("Sent %d packets, with a rate of %f",
+            distance += velocity * time;
+            TakeoffMessage toMessage = builder.withSpeed(velocity).build();
+            server.queue(toMessage);
+
+            logger.info("Time :"+timer.getTimeFromStart()+" t: "+ time+ " v: "+velocity+" d: "+(velocity * time));
+
+        }
+       logger.info(String.format("Sent %d packets, with a rate of %f",
                server.getCounter(), server.getStaticsRate()));
        server.quit();
 
@@ -81,18 +89,22 @@ public class UdpServer implements Runnable {
         MulticastSocket multicastSocket = null;
 
         try{
+
             InetAddress group = InetAddress.getByName(groupAddress);
             multicastSocket = new MulticastSocket(port);
             NetworkInterface networkInterface = NetworkUtilities.getLocalMultiCastInterface().get();
-            logger.info("Network Interface id is : " + networkInterface.getName());
             multicastSocket.setNetworkInterface(networkInterface);
             multicastSocket.joinGroup(group);
+
+            logger.info("Network Interface id is : " + networkInterface.getName());
+
         }
         catch (IOException e) {
             e.printStackTrace();
         }
 
         try {
+
             InetAddress multicastGroup = InetAddress.getByName(groupAddress);
 
             startTime = timer.getTime();
@@ -103,7 +115,9 @@ public class UdpServer implements Runnable {
             IMessage message;
 
             while(running){
+
                 time += timer.getElapsedTime();
+
                 if(time > 1){
                   message = new TimeMessage();
                   calculateStatus();
@@ -123,9 +137,10 @@ public class UdpServer implements Runnable {
                     try {
                         Thread.sleep(100);
                     } catch (InterruptedException e) {
-                        logger.info("Server Messaging Idle, Thread interrupted.");
+                        logger.info("server Messaging Idle, Thread interrupted.");
                     }
                 }
+
             }
 
             double endTime = timer.getTime();
