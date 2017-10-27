@@ -1,9 +1,6 @@
 package org.karltrout.physics;
 
-import org.joml.Vector2f;
 import org.karltrout.graphicsEngine.Timer;
-
-import javax.measure.quantity.Acceleration;
 
 public class Dynamics {
     public Dynamics() {

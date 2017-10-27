@@ -6,6 +6,7 @@ import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.karltrout.graphicsEngine.OBJLoader;
 import org.karltrout.graphicsEngine.models.Mesh;
+import org.opengis.geometry.BoundingBox;
 
 import java.util.ArrayList;
 
@@ -17,27 +18,80 @@ public class TerrainMesh {
 
 
     //public static final int RESOLUTION_FACTOR = 1;
-    public static final float GEO_ARC_SECOND_METER_DISTANCE = 30.87f;
-    public static final int GRID_SIZE = 901;
+    private static final float GEO_ARC_SECOND_METER_DISTANCE = 30.87f;
+    private static final int GRID_SIZE = 901;
 
     // Want to use this instead of hard coding the divisor
     // static final float GEO_ARC_SECOND_RESOLUTION = 1 / 3;
     private static final int MIN_RESOLUTION = 12 ;
+    private FltFile fltFile = null;
+    private BoundingBox boundingBox = null;
     private FltFileReader.FltHeader hdr = null;
     private int resolution = 1;
 
     private OBJLoader objLoader;
 
-    private Logger logger = LogManager.getLogger(this.getClass());
+    Logger logger = LogManager.getLogger(this.getClass());
+    private int GRID_SIZE_COL = 901;
+    private int GRID_SIZE_ROW = 901;
+    private int startingRow = 0;
+    private int startingColumn = 0;
 
-    public TerrainMesh(FltFileReader.FltHeader hdr, FltFile fltFile, int resolution){
+    private TerrainMesh(FltFileReader.FltHeader hdr, FltFile fltFile, int resolution) {
 
         this.objLoader = new OBJLoader();
         this.hdr = hdr;
-        this.resolution = (resolution > MIN_RESOLUTION ) ? MIN_RESOLUTION: resolution;
+        this.resolution = (resolution > MIN_RESOLUTION) ? MIN_RESOLUTION : resolution;
+        this.fltFile = fltFile;
 
-        float[] root = {0,0};
-       //            this.getTexCoords().addAll(root);
+        create();
+    }
+
+    protected TerrainMesh(){}
+
+
+    public TerrainMesh(FltFileReader.FltHeader hdr, FltFile fltFile, BoundingBox boundingBox)
+    {
+        this.boundingBox = boundingBox;
+        this.objLoader = new OBJLoader();
+        this.hdr = hdr;
+        this.resolution = 1;
+        this.fltFile = fltFile;
+
+        setFltFileScope(boundingBox);
+
+        logger.info("Bounding Box of SHP file: "+boundingBox);
+        logger.info(String.format("Flt HDR FILE Lat: %.2f, Long: %.2f ", hdr.getLatitude(), hdr.getLongitude()));
+        logger.info(String.format("Flt HDR file Cell Size: %.10f", hdr.cellsize));
+        logger.info("Grid Start Col: "+this.startingColumn);
+        logger.info("Grid Start Row: "+this.startingRow);
+        logger.info("Grid Number of Columns: "+this.GRID_SIZE_COL);
+        logger.info("Grid Number of Rows: "+this.GRID_SIZE_ROW);
+
+
+        //create();
+    }
+
+    private void setFltFileScope(BoundingBox boundingBox) {
+
+        double minLatitude = boundingBox.getMinX();
+        double minLongitude = boundingBox.getMinY();
+
+        float fltLatitude= hdr.getLatitude();
+        float fltLongitude = hdr.getLongitude();
+        Number longitudeStart  = Math.ceil(Math.abs(Math.abs(fltLongitude) - Math.abs(minLongitude))/hdr.cellsize);
+        Number latitudeStart = Math.ceil(Math.abs(Math.abs(fltLatitude) - Math.abs(minLatitude))/hdr.cellsize);
+        Number longitudeEnd = Math.ceil(longitudeStart.doubleValue() + boundingBox.getWidth());
+        Number latitudeEnd = Math.ceil(latitudeStart.doubleValue() + boundingBox.getHeight());
+
+        this.startingRow = latitudeEnd.intValue();
+        this.startingColumn = longitudeStart.intValue();
+        this.GRID_SIZE_COL = longitudeEnd.intValue() - longitudeStart.intValue() ;
+        this.GRID_SIZE_ROW = latitudeStart.intValue() - latitudeEnd.intValue();
+    }
+
+
+    private void create(){
 
        /*
          At 49 degrees north latitude,
@@ -52,29 +106,26 @@ public class TerrainMesh {
 
       //  logger.debug("Size of tex Coords: "+ getTexCoords().size());
 
-        int colLength = GRID_SIZE;
-        int rowlength = GRID_SIZE;
-        Number xx = 0;
-        Number zz = 0;
-        Number latitudePoint = 0;
-        float latSize = getLatitudePointLength( hdr.getLatitude());
+        int colLength = GRID_SIZE_COL;
+        int rowLength = GRID_SIZE_ROW;
+
+        Number latitudePoint;
+        float latSize; // = getLatitudePointLength( hdr.getLatitude());
         ArrayList<Vector3f> vertices = new ArrayList<>();
-        for (int z = 0; z < rowlength; z++ ) {
+        for (int z = startingRow; z < rowLength; z++ ) {
             // read in the first x rows and first x cols(for now)
             // Points are fltFile height by hdr.cellsize width and length ( a square )
             latitudePoint = (z > 0)?(hdr.getLatitude() + ((z*resolution)/hdr.nrows) * 3600): hdr.getLatitude();
             latSize = getLatitudePointLength( latitudePoint );
             float lonSize = getLongitudePointLength(latitudePoint).floatValue();
 
-            for ( int x = 0 ; x < colLength; x++ ){
+            for ( int x = startingColumn ; x < colLength; x++ ){
 
                 int xResolution = x * resolution;
                 int zResolution = z * resolution;
                 //Vector3f vector3f = new Vector3f(x*latSize, fltFile.data[xResolution][zResolution], z*lonSize);
                 Vector3f vector3f = new Vector3f( z*latSize, fltFile.data[xResolution][zResolution], x*lonSize);
                 vertices.add(vector3f);
-                xx = x*lonSize;
-                zz = z*latSize;
             }
 
         }
@@ -86,13 +137,13 @@ public class TerrainMesh {
         //The Original loader takes data from a text file...
         ArrayList<String[][]>faceList = new ArrayList<>();
 
-        for (int x = 0; x < rowlength -1 ; x++) {
+        for (int x = 0; x < rowLength -1 ; x++) {
             for (int z = 1; z < colLength  ; z++) {
 
-                    int tl = x * rowlength + z; // top-left
-                    int bl = x * rowlength + z + 1; // bottom-left
-                    int tr = (x + 1) * rowlength + z; // top-right
-                    int br = (x + 1) * rowlength + z + 1; // bottom-right
+                    int tl = x * rowLength + z; // top-left
+                    int bl = x * rowLength + z + 1; // bottom-left
+                    int tr = (x + 1) * rowLength + z; // top-right
+                    int br = (x + 1) * rowLength + z + 1; // bottom-right
 
                     String[][] faceVector = new String[3][3];
                     faceVector[0] = String.valueOf(tl).split("/");
@@ -111,13 +162,6 @@ public class TerrainMesh {
 
         objLoader.setFaces(faceList);
         logger.debug("Number of Faces: "+faceList.size());
-    }
-
-    public TerrainMesh(FltFileReader.FltHeader hdr, FltFile fltFile) {
-        this(hdr, fltFile, MIN_RESOLUTION);
-    }
-
-    public TerrainMesh() {
     }
 
     public Mesh buildMesh(){
@@ -162,8 +206,7 @@ public class TerrainMesh {
     }
 
     private double getLatitudeLength(Number latitude){
-        double results =  (111132.954d - (559.822d * Math.cos( 2d * Math.toRadians(latitude.doubleValue()))) + (1.175d * Math.cos( 4d * Math.toRadians(latitude.doubleValue()) )));
-        return results;
+        return (111132.954d - (559.822d * Math.cos( 2d * Math.toRadians(latitude.doubleValue()))) + (1.175d * Math.cos( 4d * Math.toRadians(latitude.doubleValue()) )));
     }
 
     /*public float getLongitudeLength(){

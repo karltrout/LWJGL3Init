@@ -8,6 +8,7 @@ import org.geotools.feature.FeatureIterator;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.filter.Filter;
+import org.opengis.geometry.BoundingBox;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,7 +34,7 @@ public class shapeFileReader {
     public static void main(String[] args) {
 
         try {
-            Path statesShape = Paths.get("resources/models/statesShape/states.shp");
+            Path statesShape = Paths.get("resources/shapeFiles/KPHX/aerodrome.shp");
             File file = statesShape.toFile();
             Map<String, Object> map = new HashMap<>();
             map.put("url", file.toURI().toURL());
@@ -47,17 +48,27 @@ public class shapeFileReader {
             Filter filter = Filter.INCLUDE; // ECQL.toFilter("BBOX(THE_GEOM, 10,20,30,40)")
 
             FeatureCollection<SimpleFeatureType, SimpleFeature> collection = source.getFeatures(filter);
+            BoundingBox aerodromeBounds = null;
             try (FeatureIterator<SimpleFeature> features = collection.features()) {
                 while (features.hasNext()) {
                     SimpleFeature feature = features.next();
                     System.out.print(feature.getID());
                     System.out.print(": ");
                     System.out.println(feature.getDefaultGeometryProperty().getValue());
+                    if(feature.getID().contains("aerodrome")){
+                        aerodromeBounds = feature.getBounds();
+                    }
                 }
+
             }
+            if(aerodromeBounds != null){
+                System.out.println("Aerodrome Bounds :"+aerodromeBounds);
+            }
+
         }catch(IOException e){
             e.printStackTrace();
         }
+
     }
 
 }
