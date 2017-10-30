@@ -36,6 +36,7 @@ public class TerrainMesh {
     private int GRID_SIZE_ROW = 901;
     private int startingRow = 0;
     private int startingColumn = 0;
+    private boolean NOT_COMPLETE = true;
 
     private TerrainMesh(FltFileReader.FltHeader hdr, FltFile fltFile, int resolution) {
 
@@ -68,26 +69,45 @@ public class TerrainMesh {
         logger.info("Grid Number of Columns: "+this.GRID_SIZE_COL);
         logger.info("Grid Number of Rows: "+this.GRID_SIZE_ROW);
 
+        if(NOT_COMPLETE){
+            logger.warn("WARNING: THe FLT File does not FULLY cover the required Bounding Box!!");
+        }
 
         //create();
     }
 
     private void setFltFileScope(BoundingBox boundingBox) {
 
-        double minLatitude = boundingBox.getMinX();
-        double minLongitude = boundingBox.getMinY();
+        double minLongitude  = boundingBox.getMinX();
+        double minLatitude = boundingBox.getMinY();
 
         float fltLatitude= hdr.getLatitude();
         float fltLongitude = hdr.getLongitude();
-        Number longitudeStart  = Math.ceil(Math.abs(Math.abs(fltLongitude) - Math.abs(minLongitude))/hdr.cellsize);
+        double bbWidth = boundingBox.getWidth();
+        double bbHeight = boundingBox.getHeight();
+
+        Number longitudeStart = 0 ;
+        if (fltLongitude < 0 && minLongitude > fltLongitude ) {
+            longitudeStart =
+                    Math.ceil((fltLongitude - minLongitude) / hdr.cellsize);
+        } else {
+            NOT_COMPLETE = true;
+        }
+        Number longitudeEnd = 0;
+        if (fltLongitude < 0 && minLongitude+bbWidth > fltLongitude ){
+            longitudeEnd = Math.ceil(longitudeStart.doubleValue()  +(bbWidth/hdr.cellsize));
+
+        }
+        else {
+            NOT_COMPLETE = true;
+        }
         Number latitudeStart = Math.ceil(Math.abs(Math.abs(fltLatitude) - Math.abs(minLatitude))/hdr.cellsize);
-        Number longitudeEnd = Math.ceil(longitudeStart.doubleValue() + boundingBox.getWidth());
-        Number latitudeEnd = Math.ceil(latitudeStart.doubleValue() + boundingBox.getHeight());
+        Number latitudeEnd = Math.ceil(latitudeStart.doubleValue() + (bbHeight/hdr.cellsize));
 
         this.startingRow = latitudeEnd.intValue();
         this.startingColumn = longitudeStart.intValue();
         this.GRID_SIZE_COL = longitudeEnd.intValue() - longitudeStart.intValue() ;
-        this.GRID_SIZE_ROW = latitudeStart.intValue() - latitudeEnd.intValue();
+        this.GRID_SIZE_ROW = latitudeEnd.intValue() - latitudeStart.intValue();
     }
 
 
