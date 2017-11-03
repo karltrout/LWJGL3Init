@@ -5,6 +5,7 @@ import org.geotools.data.DataStoreFinder;
 import org.geotools.data.FeatureSource;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
+import org.geotools.resources.geometry.XRectangle2D;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.filter.Filter;
@@ -21,21 +22,21 @@ import java.util.Map;
  * blah
  * Created by karltrout on 9/4/17.
  */
-public class shapeFileReader {
+public class ShapeFileReader {
 
-    File file = new File("example.shp");
     HashMap<String, Object> map = new HashMap<>();
 
-
-    shapeFileReader(){
-
+    public XRectangle2D getBoundingBox() {
+        return new XRectangle2D(
+                boundingBox.getMinX(), boundingBox.getMinY(), boundingBox.getWidth(), boundingBox.getHeight());
     }
 
-    public static void main(String[] args) {
+    BoundingBox boundingBox = null;
+
+
+    public ShapeFileReader(File file){
 
         try {
-            Path statesShape = Paths.get("resources/shapeFiles/KPHX/aerodrome.shp");
-            File file = statesShape.toFile();
             Map<String, Object> map = new HashMap<>();
             map.put("url", file.toURI().toURL());
 
@@ -48,7 +49,6 @@ public class shapeFileReader {
             Filter filter = Filter.INCLUDE; // ECQL.toFilter("BBOX(THE_GEOM, 10,20,30,40)")
 
             FeatureCollection<SimpleFeatureType, SimpleFeature> collection = source.getFeatures(filter);
-            BoundingBox aerodromeBounds = null;
             try (FeatureIterator<SimpleFeature> features = collection.features()) {
                 while (features.hasNext()) {
                     SimpleFeature feature = features.next();
@@ -56,19 +56,27 @@ public class shapeFileReader {
                     System.out.print(": ");
                     System.out.println(feature.getDefaultGeometryProperty().getValue());
                     if(feature.getID().contains("aerodrome")){
-                        aerodromeBounds = feature.getBounds();
+                        boundingBox = feature.getBounds();
                     }
                 }
 
             }
-            if(aerodromeBounds != null){
-                System.out.println("Aerodrome Bounds :"+aerodromeBounds);
+            if(boundingBox != null){
+                System.out.println("Aerodrome Bounds :"+ boundingBox);
             }
 
         }catch(IOException e){
             e.printStackTrace();
         }
 
+    }
+
+    public static void main(String[] args) {
+
+            Path statesShape = Paths.get("resources/shapeFiles/KPHX/aerodrome.shp");
+            File file = statesShape.toFile();
+
+            ShapeFileReader reader = new ShapeFileReader(file);
     }
 
 }

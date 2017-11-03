@@ -2,11 +2,11 @@ package org.karltrout.graphicsEngine.terrains.fltFile;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.geotools.resources.geometry.XRectangle2D;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.karltrout.graphicsEngine.OBJLoader;
 import org.karltrout.graphicsEngine.models.Mesh;
-import org.opengis.geometry.BoundingBox;
 
 import java.util.ArrayList;
 
@@ -19,24 +19,23 @@ public class TerrainMesh {
 
     //public static final int RESOLUTION_FACTOR = 1;
     private static final float GEO_ARC_SECOND_METER_DISTANCE = 30.87f;
-    private static final int GRID_SIZE = 901;
+    //private static final int GRID_SIZE = 901;
 
     // Want to use this instead of hard coding the divisor
     // static final float GEO_ARC_SECOND_RESOLUTION = 1 / 3;
     private static final int MIN_RESOLUTION = 12 ;
     private FltFile fltFile = null;
-    private BoundingBox boundingBox = null;
     private FltFileReader.FltHeader hdr = null;
     private int resolution = 1;
 
     private OBJLoader objLoader;
 
-    Logger logger = LogManager.getLogger(this.getClass());
+    private Logger logger = LogManager.getLogger(this.getClass());
     private int GRID_SIZE_COL = 901;
     private int GRID_SIZE_ROW = 901;
     private int startingRow = 0;
     private int startingColumn = 0;
-    private boolean NOT_COMPLETE = true;
+    private boolean COMPLETE_COVERAGE = true;
 
     private TerrainMesh(FltFileReader.FltHeader hdr, FltFile fltFile, int resolution) {
 
@@ -49,66 +48,6 @@ public class TerrainMesh {
     }
 
     protected TerrainMesh(){}
-
-
-    public TerrainMesh(FltFileReader.FltHeader hdr, FltFile fltFile, BoundingBox boundingBox)
-    {
-        this.boundingBox = boundingBox;
-        this.objLoader = new OBJLoader();
-        this.hdr = hdr;
-        this.resolution = 1;
-        this.fltFile = fltFile;
-
-        setFltFileScope(boundingBox);
-
-        logger.info("Bounding Box of SHP file: "+boundingBox);
-        logger.info(String.format("Flt HDR FILE Lat: %.2f, Long: %.2f ", hdr.getLatitude(), hdr.getLongitude()));
-        logger.info(String.format("Flt HDR file Cell Size: %.10f", hdr.cellsize));
-        logger.info("Grid Start Col: "+this.startingColumn);
-        logger.info("Grid Start Row: "+this.startingRow);
-        logger.info("Grid Number of Columns: "+this.GRID_SIZE_COL);
-        logger.info("Grid Number of Rows: "+this.GRID_SIZE_ROW);
-
-        if(NOT_COMPLETE){
-            logger.warn("WARNING: THe FLT File does not FULLY cover the required Bounding Box!!");
-        }
-
-        //create();
-    }
-
-    private void setFltFileScope(BoundingBox boundingBox) {
-
-        double minLongitude  = boundingBox.getMinX();
-        double minLatitude = boundingBox.getMinY();
-
-        float fltLatitude= hdr.getLatitude();
-        float fltLongitude = hdr.getLongitude();
-        double bbWidth = boundingBox.getWidth();
-        double bbHeight = boundingBox.getHeight();
-
-        Number longitudeStart = 0 ;
-        if (fltLongitude < 0 && minLongitude > fltLongitude ) {
-            longitudeStart =
-                    Math.ceil((fltLongitude - minLongitude) / hdr.cellsize);
-        } else {
-            NOT_COMPLETE = true;
-        }
-        Number longitudeEnd = 0;
-        if (fltLongitude < 0 && minLongitude+bbWidth > fltLongitude ){
-            longitudeEnd = Math.ceil(longitudeStart.doubleValue()  +(bbWidth/hdr.cellsize));
-
-        }
-        else {
-            NOT_COMPLETE = true;
-        }
-        Number latitudeStart = Math.ceil(Math.abs(Math.abs(fltLatitude) - Math.abs(minLatitude))/hdr.cellsize);
-        Number latitudeEnd = Math.ceil(latitudeStart.doubleValue() + (bbHeight/hdr.cellsize));
-
-        this.startingRow = latitudeEnd.intValue();
-        this.startingColumn = longitudeStart.intValue();
-        this.GRID_SIZE_COL = longitudeEnd.intValue() - longitudeStart.intValue() ;
-        this.GRID_SIZE_ROW = latitudeEnd.intValue() - latitudeStart.intValue();
-    }
 
 
     private void create(){
@@ -132,19 +71,19 @@ public class TerrainMesh {
         Number latitudePoint;
         float latSize; // = getLatitudePointLength( hdr.getLatitude());
         ArrayList<Vector3f> vertices = new ArrayList<>();
-        for (int z = startingRow; z < rowLength; z++ ) {
+        for (int z = startingRow; z < startingRow+rowLength; z++ ) {
             // read in the first x rows and first x cols(for now)
             // Points are fltFile height by hdr.cellsize width and length ( a square )
             latitudePoint = (z > 0)?(hdr.getLatitude() + ((z*resolution)/hdr.nrows) * 3600): hdr.getLatitude();
             latSize = getLatitudePointLength( latitudePoint );
             float lonSize = getLongitudePointLength(latitudePoint).floatValue();
 
-            for ( int x = startingColumn ; x < colLength; x++ ){
+            for ( int x = startingColumn ; x < startingColumn+colLength; x++ ){
 
                 int xResolution = x * resolution;
                 int zResolution = z * resolution;
-                //Vector3f vector3f = new Vector3f(x*latSize, fltFile.data[xResolution][zResolution], z*lonSize);
-                Vector3f vector3f = new Vector3f( z*latSize, fltFile.data[xResolution][zResolution], x*lonSize);
+
+                Vector3f vector3f = new Vector3f( z*latSize, fltFile.data[zResolution][xResolution], x*lonSize);
                 vertices.add(vector3f);
             }
 
