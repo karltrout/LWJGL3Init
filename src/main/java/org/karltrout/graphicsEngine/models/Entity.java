@@ -3,6 +3,7 @@ package org.karltrout.graphicsEngine.models;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joml.*;
+import org.karltrout.graphicsEngine.Geodesy.ReferenceEllipsoid;
 import org.karltrout.graphicsEngine.Location;
 import org.karltrout.graphicsEngine.terrains.fltFile.TerrainMesh;
 import org.lwjgl.opengl.GL11;
@@ -24,7 +25,7 @@ public class Entity {
     private final Vector3f rotation;
     private Boolean wireMesh = false;
     private TerrainMesh currentTerrain;
-    private Location location;
+    private Vector3d location;
     private int cullFace = GL11.GL_BACK;
     private int frontFace = GL11.GL_CCW;
     private Matrix4f modelMatrix = new Matrix4f().identity();
@@ -36,6 +37,7 @@ public class Entity {
 
     private boolean selectable = false;
     private boolean selected = false;
+    private float scaleFactor;
 
     public Entity(Renderable renderable) {
         this.renderable = renderable;
@@ -109,6 +111,7 @@ public class Entity {
         wireMesh = wireFrame;
     }
 
+    /* Not Using this form of setLocation.
     public void setLocation(Vector2f latlong) {
 
         if (this.currentTerrain != null){
@@ -120,7 +123,7 @@ public class Entity {
 
         System.out.println("Entity "+location);
         System.out.println("Entity Position  X: "+position.x + " Y: " + position.y + " Z: "+position.z);
-    }
+    }*/
 
     public void setTerrain(TerrainMesh terrainMesh) {
         this.currentTerrain = terrainMesh;
@@ -209,5 +212,20 @@ logger.info("U: "+u+" puv: "+puv);
 
     public boolean isSelected() {
         return selected;
+    }
+
+    public void updatePosition(float speed, float interval){
+        //float speed = speed; //30.0 m/s
+        double distance = (speed * interval)/111111.0;
+        this.location.add(0,distance, 0);
+        Vector3f newPosition = ReferenceEllipsoid.cartesianCoordinates(location.x, location.y, location.z).mul(scaleFactor);
+        logger.info("Current Position: "+newPosition+" current distance: "+distance+" current Location: "+this.location);
+        setPosition(newPosition);
+
+    }
+
+    public void setLocation(Vector3d locationVector, float scaleFactor) {
+        this.location = locationVector;
+        this.scaleFactor = scaleFactor;
     }
 }

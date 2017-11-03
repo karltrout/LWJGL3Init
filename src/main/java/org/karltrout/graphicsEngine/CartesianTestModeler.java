@@ -90,10 +90,10 @@ public class CartesianTestModeler implements Runnable {
             // Use elapse time here in input for timed events. multiply it by milliseconds against speed
             input();
 
-          //  while (accumulator >= interval) {
+            while (accumulator >= interval) {
                 update(interval);
-           //     accumulator -= interval;
-           // }
+                accumulator -= interval;
+            }
 
             render();
 

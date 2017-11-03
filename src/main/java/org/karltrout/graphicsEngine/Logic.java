@@ -5,6 +5,7 @@ import org.apache.logging.log4j.Logger;
 import org.geotools.resources.geometry.XRectangle2D;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
+import org.joml.Vector3d;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 import org.karltrout.graphicsEngine.Geodesy.GeoSpacialTerrainMesh;
@@ -78,7 +79,7 @@ public class Logic implements ILogic {
         Path pathToFltHdr = Paths.get("resources/models/terrainModels/n34w113.hdr");
         Path pathToFltFile = Paths.get("resources/models/terrainModels/n34w113.flt");
         FltFileReader fltFileReader = FltFileReader.loadFltFile(pathToFltFile, pathToFltHdr);
-        GeoSpacialTerrainMesh geoTerrainMesh = new GeoSpacialTerrainMesh(fltFileReader.hdr, fltFileReader.fltFile,"n34w113_ls8.png", 12);
+        GeoSpacialTerrainMesh geoTerrainMesh = new GeoSpacialTerrainMesh(fltFileReader.hdr, fltFileReader.fltFile,"n34w113_ls8a.png", 12);
         Mesh geoMesh = geoTerrainMesh.buildMesh();
         Entity terrainEntity113 = new Entity(geoMesh);
         terrainEntity113.setMaxAltitude(15000);
@@ -90,7 +91,7 @@ public class Logic implements ILogic {
         Path pathToFltHdr112 = Paths.get("resources/models/terrainModels/n34w112.hdr");
         Path pathToFltFile112 = Paths.get("resources/models/terrainModels/n34w112.flt");
         FltFileReader fltFileReader112 = FltFileReader.loadFltFile(pathToFltFile112, pathToFltHdr112);
-        GeoSpacialTerrainMesh geoTerrainMesh112 = new GeoSpacialTerrainMesh(fltFileReader112.hdr, fltFileReader112.fltFile,"n34w112_ls8.png", 12);
+        GeoSpacialTerrainMesh geoTerrainMesh112 = new GeoSpacialTerrainMesh(fltFileReader112.hdr, fltFileReader112.fltFile,"n34w112_ls8a.png", 12);
         Mesh geoMesh112 = geoTerrainMesh112.buildMesh();
         Entity terrainEntity112 = new Entity(geoMesh112);
         terrainEntity112.setMaxAltitude(15000);
@@ -104,14 +105,14 @@ public class Logic implements ILogic {
         fltFiles[1] = fltFileReader112;
         //TODO THIS IS CRAP Should not have to move this much with location or scale in GeoSpacialTerrainMesh line: 196
         // Original : -112.037,  33.421,  -111.979,  33.444
-        //Corrected : -112.0430, 33.4495, -111.9850, 33.4725)
-        XRectangle2D aerodromeBounds = XRectangle2D.createFromExtremums( -112.0430, 33.4495, -111.9850, 33.4725);
+        //Corrected : -112.0470, 33.4495, -111.9980, 33.4725)
+        XRectangle2D aerodromeBounds = XRectangle2D.createFromExtremums( -112.0500, 33.4518, -111.9915, 33.4775);
         GeoSpacialTerrainMesh terrainMesh = new GeoSpacialTerrainMesh(fltFiles, aerodromeBounds, "kphxAeroDromeMasked.png", 5);
 
        Mesh aeroDromeMesh = terrainMesh.buildMesh();
 
         Entity aeroDromeEntity = new Entity(aeroDromeMesh);
-        aeroDromeEntity.setMaxAltitude(150000);
+        aeroDromeEntity.setMaxAltitude(1500);
         aeroDromeEntity.setScale(scaleFactor );
         aeroDromeEntity.makeWireFrame(false);
         entities.add(aeroDromeEntity);
@@ -134,9 +135,11 @@ public class Logic implements ILogic {
          */
         float altitude = 4200.0f;
         // end of Runway : 33.440867, -112.030148
-        Vector3f bunnySpot = ReferenceEllipsoid.cartesianCoordinates(33.439567, -112.023148, altitude).mul(scaleFactor);
+      //Corrected End of Runway: 33.439567, -112.023148
+        Vector3f bunnySpot = ReferenceEllipsoid.cartesianCoordinates(33.440867,  -112.030148, altitude).mul(scaleFactor);
         logger.info("Bunny Position: "+bunnySpot);
 
+        bunny.setLocation(new Vector3d(33.440867, -112.030148, altitude), scaleFactor);
         bunny.setPosition(bunnySpot.x , bunnySpot.y, bunnySpot.z );
         bunny.moveRotation(54f,-18f,80f);
         entities.add(bunny);
@@ -153,7 +156,7 @@ public class Logic implements ILogic {
             Elevation: 	1110.1 ft.
          */
         float terminalAltitude = 4000.0f;
-        Vector3f terminalPosition = ReferenceEllipsoid.cartesianCoordinates(33.431517, -112.005486, terminalAltitude).mul(scaleFactor);
+        Vector3f terminalPosition = ReferenceEllipsoid.cartesianCoordinates(33.431517, -112.014086, terminalAltitude).mul(scaleFactor);
         logger.info("Terminal Position: "+terminalPosition);
 
         terminalEntity.setPosition(terminalPosition.x , terminalPosition.y, terminalPosition.z );
@@ -162,25 +165,28 @@ public class Logic implements ILogic {
         entities.add(terminalEntity);
 
         // Tower
+      /*
         objLoader = new OBJLoader();
         Mesh towerMesh = objLoader.loadObjModel("kphx_tower",textureData );
-        terminal.setMaterial(new Material(new Vector4f(.816f,.859f,.988f,1f), 1.0f));
+        towerMesh.setMaterial(new Material(new Vector4f(0f,1f,0f,1f), 1.0f));
         Entity towerEntity = new Entity(towerMesh);
         towerEntity.makeWireFrame(false);
-        towerEntity.setScale(.1f);
+        towerEntity.setScale(10f);
         /*
             Latitude: 	33-25.863480N
             Longitude: 	112-01.626082W
             Elevation: 	1110.1 ft.
          */
-        float towerAltitude = 4001.0f;
+
+        /*      float towerAltitude = 4000.0f;
         Vector3f towerPosition = ReferenceEllipsoid.cartesianCoordinates(33.431517, -112.005486, towerAltitude).mul(scaleFactor);
         logger.info("Tower Position: "+towerPosition);
 
         towerEntity.setPosition(towerPosition.x , towerPosition.y, towerPosition.z );
-        towerEntity.moveRotation(149f,-12f,18.5f);
+        //towerEntity.moveRotation(149f,-12f,18.5f);
         towerEntity.setSelectable(true);
-        entities.add(towerEntity);
+        //entities.add(towerEntity);
+        */
 
         movableEntity = bunny;
 
@@ -346,6 +352,8 @@ public class Logic implements ILogic {
         for (Entity entity : entities) {
             movableEntity = (entity.isSelected())? entity: movableEntity;
         }
+
+        movableEntity.updatePosition(30.0f, interval);
 
         // Update camera position
         if (cameraInc.length() > 0) {
