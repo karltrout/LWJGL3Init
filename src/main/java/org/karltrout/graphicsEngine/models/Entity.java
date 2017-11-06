@@ -4,12 +4,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joml.*;
 import org.karltrout.graphicsEngine.Geodesy.ReferenceEllipsoid;
-import org.karltrout.graphicsEngine.Location;
-import org.karltrout.graphicsEngine.terrains.fltFile.TerrainMesh;
 import org.lwjgl.opengl.GL11;
 
 import java.lang.Math;
-import java.text.NumberFormat;
 
 /**
  * An Object in the World.
@@ -24,16 +21,14 @@ public class Entity {
     private float scale;
     private final Vector3f rotation;
     private Boolean wireMesh = false;
-    private TerrainMesh currentTerrain;
     private Vector3d location;
     private int cullFace = GL11.GL_BACK;
     private int frontFace = GL11.GL_CCW;
     private Matrix4f modelMatrix = new Matrix4f().identity();
 
-    private int minAltitude = 0;
+    //private int minAltitude = 0;
     private int maxAltitude = 120000000;
     private Logger logger = LogManager.getLogger();
-    private float radius = 3f;
 
     private boolean selectable = false;
     private boolean selected = false;
@@ -61,14 +56,18 @@ public class Entity {
         this.position.x = target.x;
         this.position.y = target.y;
         this.position.z = target.z;
-        //calculateRotation();
+        calculateRotation();
     }
 
+    /**
+     * Call this if you want your entity to do cartwheels ;-)
+     */
     private void calculateRotation() {
-       double z = Math.atan((double)position.x/(double)position.y);
-       double y = Math.atan((double)position.x/(double)position.z);
-       double x = 3.142 +  Math.atan((double)position.y /(double)position.z);
-       logger.info("Entity X Rot: "+Math.toDegrees(x)+" Y Rot: "+Math.toDegrees(y)+" Z Rot: "+Math.toDegrees(z));
+       float z = (float)Math.atan((double)position.x/(double)position.y);
+       float y = (float)Math.atan((double)position.x/(double)position.z);
+       float x = (float)(3.142 +  Math.atan((double)position.y /(double)position.z));
+       //this.moveRotation(x, y, z);
+       //logger.info("Entity X Rot: "+Math.toDegrees(x)+" Y Rot: "+Math.toDegrees(y)+" Z Rot: "+Math.toDegrees(z));
     }
 
     public float getScale() {
@@ -83,12 +82,11 @@ public class Entity {
         return rotation;
     }
 
-    public void setRotation(float x, float y, float z) {
+   /* public void setRotation(float x, float y, float z) {
         this.rotation.x = x;
         this.rotation.y = y;
         this.rotation.z = z;
-
-    }
+    } */
 
     public void  moveRotation(float offsetX, float offsetY, float offsetZ) {
         rotation.x += offsetX;
@@ -125,26 +123,21 @@ public class Entity {
         System.out.println("Entity Position  X: "+position.x + " Y: " + position.y + " Z: "+position.z);
     }*/
 
-    public void setTerrain(TerrainMesh terrainMesh) {
-        this.currentTerrain = terrainMesh;
-    }
-
-    public void setCullFace(int cullFace){
+    /*public void setCullFace(int cullFace){
         this.cullFace = cullFace;
-    }
+    }*/
 
     public int getCullFace() {
         return cullFace;
     }
 
-    public int getMinAltitude() {
+    /*public int getMinAltitude() {
         return minAltitude;
     }
 
     public void setMinAltitude(int minAltitude) {
         this.minAltitude = minAltitude;
-    }
-
+    }*/
     public int getMaxAltitude() {
         return maxAltitude;
     }
@@ -157,45 +150,19 @@ public class Entity {
         return frontFace;
     }
 
-    public void setFrontFace(int frontFace) {
+    /*public void setFrontFace(int frontFace) {
         this.frontFace = frontFace;
-    }
+    }*/
 
     public Matrix4f getModelMatrix() {
         return modelMatrix;
     }
 
-    public void setWorldPosition(){
-        double tanX = Math.atan(position.y/position.z);
-        double tanY = Math.atan(position.x/position.z);
-        System.out.println("X: "+Math.toDegrees(tanX)+" Y: "+Math.toDegrees(tanY));
-//        modelMatrix.lookAt(this.position, new Vector3f(), new Vector3f(0,1,0) );
-    }
-
-
     public boolean intersectedByRay(Vector3f origin, Vector3f ray) {
-
         Vector2f result = new Vector2f();
-        //logger.info("O: "+origin+" R:"+ray+" P:"+position+" r:"+radius);
-        Intersectionf.intersectRaySphere(origin, ray, position,radius*radius, result);
-
-        //logger.info("intersection: "+result);
-        return Intersectionf.intersectRaySphere(origin, ray, position,radius*radius, result);
-        /*Vector3f u = new Vector3f(origin).sub(position);
-        float puv = new Vector3f(ray).dot(u);
-logger.info("U: "+u+" puv: "+puv);
-        // is the point in front of the ray?
-        if ( puv > 0 ){
-            //compute distance from center of entity to the Ray
-            Vector3f pointOnRay = new Vector3f(ray).mul(new Vector3f(ray).dot(position));
-
-            Vector3f distOnRay = new Vector3f(origin).add(pointOnRay);
-            float rayToSphereLength = position.distance(distOnRay);
-            logger.info("Distance to point: "+ rayToSphereLength);
-            if(radius > rayToSphereLength ) return true;
-        }
-        //float c = (float) (distance.dot(distance) - Math.pow(this.radius, 2));
-*/
+        float radius = 3f;
+        Intersectionf.intersectRaySphere(origin, ray, position, radius * radius, result);
+        return Intersectionf.intersectRaySphere(origin, ray, position, radius * radius, result);
     }
 
     public void setSelectable(boolean selectable) {
@@ -219,7 +186,7 @@ logger.info("U: "+u+" puv: "+puv);
         double distance = (speed * interval)/111111.0;
         this.location.add(0,distance, 0);
         Vector3f newPosition = ReferenceEllipsoid.cartesianCoordinates(location.x, location.y, location.z).mul(scaleFactor);
-        logger.info("Current Position: "+newPosition+" current distance: "+distance+" current Location: "+this.location);
+        //logger.info(String.format("Current Location: %f , %f, %f", newPosition.x, newPosition.y, newPosition.z));
         setPosition(newPosition);
 
     }
