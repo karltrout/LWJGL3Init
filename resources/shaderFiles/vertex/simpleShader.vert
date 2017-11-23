@@ -17,7 +17,7 @@ uniform mat4 worldMatrix;
 uniform mat4 viewMatrix;
 uniform mat4 transformationMatrix;
 
-const float density = 0.0015;
+const float density = 0.00030;
 const float gradient = 5;
 
 
