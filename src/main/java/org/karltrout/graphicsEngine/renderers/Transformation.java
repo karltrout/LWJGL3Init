@@ -18,6 +18,7 @@ public class Transformation {
     private final Matrix4f orthoMatrix;
     private final Matrix4f modelMatrix;
     private final Matrix4f orthoModelMatrix;
+    private final Matrix4f transformationMatrix;
 
     public Transformation() {
 
@@ -28,6 +29,7 @@ public class Transformation {
         orthoMatrix = new Matrix4f();
         modelMatrix = new Matrix4f();
         orthoModelMatrix = new Matrix4f();
+        transformationMatrix = new Matrix4f();
     }
 
     public Matrix4f getViewMatrix(Camera camera) {
@@ -80,4 +82,23 @@ public class Transformation {
         return orthoModelMatrix;
     }
 
+    public Matrix4f getTransformationMatrix(Entity entity) {
+
+        Matrix4f matrix = new Matrix4f();
+        Vector3f translation = entity.getPosition();
+        float rx =  entity.getRotation().x;
+        float ry =  entity.getRotation().y;
+        float rz =  entity.getRotation().z;
+        float scale = entity.getScale();
+
+        matrix.translate(translation);
+
+        matrix.rotate((float) Math.toRadians(rx), new Vector3f(1,0,0));
+        matrix.rotate((float) Math.toRadians(ry), new Vector3f(0,1,0));
+        matrix.rotate((float) Math.toRadians(rz), new Vector3f(0,0,1));
+
+        matrix.scale(new Vector3f(scale,scale,scale));
+
+        return matrix;
+    }
 }

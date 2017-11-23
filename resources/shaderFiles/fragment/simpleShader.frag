@@ -4,7 +4,10 @@ in vec2 outTexCoord;
 in vec3 mvVertexNormal;
 in vec3 mvVertexPos;
 in vec4 outColor;
+in float visibility;
 out vec4 fragColor;
+
+uniform vec3 skyColor;
 
 vec4 ambientC;
 vec4 diffuseC;
@@ -126,5 +129,5 @@ void main()
     setupColours(material, outTexCoord);
     vec4 diffuseSpecularComp = calcDirectionalLight(directionalLight, mvVertexPos, mvVertexNormal);
     fragColor = ambientC * vec4(ambientLight, 1) + diffuseSpecularComp;
-
+    fragColor = mix(vec4(skyColor, 1.0), fragColor, visibility);
 }

@@ -36,9 +36,9 @@ public class AppRenderer {
     private static final float FAR_PLANE = 1200000.0f;
 
     //SKY COLOR  = 83.1, 94.5, 97.3
-    private static float RED = 0.0f;
-    private static float GREEN = 0.0f;
-    private static float BLUE = 0.0f;
+    private static float RED   = .831f;
+    private static float GREEN = .945f;
+    private static float BLUE  = .973f;
 
     private Transformation transformation;
 
@@ -135,6 +135,7 @@ public class AppRenderer {
                     Arrays.stream(entities).filter( entity1 -> !entity.equals( entity1 )).forEach(entity1 ->  entity1.setSelected(false));
                 }
             }
+            appShader.setUniform("skyColor", new Vector3f(RED,GREEN,BLUE));
 
             appShader.setUniform("directionalLight", currDirLight);
 
@@ -151,9 +152,14 @@ public class AppRenderer {
                 glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
             }
 
+            //set the transformationMatrix for this entity
+            Matrix4f transformationMatrix = transformation.getTransformationMatrix(entity);
+            appShader.setUniform("transformationMatrix", transformationMatrix);
+
             //Set the modelView Matrix for this entity
             Matrix4f modelViewMatrix = transformation.getModelViewMatrix(entity, viewMatrix);
             appShader.setUniform("modelViewMatrix", modelViewMatrix);
+            appShader.setUniform("viewMatrix", viewMatrix);
             // Render the mesh for this game item
             appShader.setUniform("material", entity.getRenderable().getMaterial());
             // Render the mesh for this game item
@@ -188,6 +194,8 @@ public class AppRenderer {
 
         appShader.createUniform("projectionMatrix");
         appShader.createUniform("modelViewMatrix");
+        appShader.createUniform("viewMatrix");
+        appShader.createUniform("transformationMatrix");
         appShader.createUniform("texture_sampler");
         appShader.createMaterialUniform("material");
         // Create lighting related uniforms
@@ -196,6 +204,7 @@ public class AppRenderer {
         //appShader.createPointLightUniform("pointLight");
         //appShader.createSpotLightUniform("spotLight");
         appShader.createDirectionalLightUniform("directionalLight");
+        appShader.createUniform("skyColor");
 
         hudShader = new HudShader();
 
