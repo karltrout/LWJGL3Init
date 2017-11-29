@@ -12,36 +12,26 @@ import java.lang.Math;
  */
 public class Transformation {
     private final Matrix4f projectionMatrix;
-    private final Matrix4f worldMatrix;
     private final Matrix4f viewMatrix;
     private final Matrix4f modelViewMatrix;
     private final Matrix4f orthoMatrix;
     private final Matrix4f modelMatrix;
     private final Matrix4f orthoModelMatrix;
-    private final Matrix4f transformationMatrix;
 
     public Transformation() {
 
-        worldMatrix = new Matrix4f();
         projectionMatrix = new Matrix4f();
         viewMatrix = new Matrix4f();
         modelViewMatrix = new Matrix4f();
         orthoMatrix = new Matrix4f();
         modelMatrix = new Matrix4f();
         orthoModelMatrix = new Matrix4f();
-        transformationMatrix = new Matrix4f();
     }
 
     public Matrix4f getViewMatrix(Camera camera) {
-        Vector3f cameraPos = camera.getPosition();
-        Vector3f rotation = camera.getRotation();
+        Vector3f cameraPosition = camera.getPosition();
         viewMatrix.identity();
-        // First do the rotation so camera rotates over its position
-        //viewMatrix.rotate((float) Math.toRadians(rotation.x), new Vector3f(1, 0, 0))
-        //        .rotate((float)Math.toRadians(rotation.y), new Vector3f(0, 1, 0))
-        //        .rotate((float)Math.toRadians(rotation.z), new Vector3f(0,0,1));
-        // Then do the translation, remember the worl comes to you so its a negtive movement
-        viewMatrix.mul(camera.getCameraAngle()).translate(-cameraPos.x, -cameraPos.y, -cameraPos.z);
+        viewMatrix.mul(camera.getCameraAngle()).translate(-cameraPosition.x, -cameraPosition.y, -cameraPosition.z);
         return viewMatrix;
     }
 
@@ -63,14 +53,13 @@ public class Transformation {
         return viewCurr.mul(modelViewMatrix).mul(modelMatrix);
     }
 
-    public final Matrix4f getOrthoProjectionMatrix(float left, float right, float bottom,
-                                                   float top) {
+    public final Matrix4f getOrthoProjectionMatrix(float left, float right, float bottom, float top) {
         orthoMatrix.identity();
         orthoMatrix.setOrtho2D(left, right, bottom, top);
         return orthoMatrix;
     }
 
-    public Matrix4f buildOrtoProjModelMatrix(Entity entity, Matrix4f orthoMatrix) {
+    public Matrix4f buildOrtoProjectionModelMatrix(Entity entity, Matrix4f orthoMatrix) {
         Vector3f rotation = entity.getRotation();
         modelMatrix.identity().translate(entity.getPosition()).
                 rotateX((float) Math.toRadians(-rotation.x)).

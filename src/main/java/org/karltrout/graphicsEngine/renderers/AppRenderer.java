@@ -36,9 +36,9 @@ public class AppRenderer {
     private static final float FAR_PLANE = 1200000.0f;
 
     //SKY COLOR  = 83.1, 94.5, 97.3
-    private static float RED   = .831f;
-    private static float GREEN = .945f;
-    private static float BLUE  = .973f;
+    private static float RED   = .831f; //.273f; //.831f;
+    private static float GREEN = .945f; //.594f; //.945f;
+    private static float BLUE  = .973f; //.887f; //.973f;
 
     private Transformation transformation;
 
@@ -72,7 +72,7 @@ public class AppRenderer {
             text.updateRate(frameRate);
 
             // Set orthographic and model matrix for this HUD item
-            Matrix4f projModelMatrix = transformation.buildOrtoProjModelMatrix(hudEntity, ortho);
+            Matrix4f projModelMatrix = transformation.buildOrtoProjectionModelMatrix(hudEntity, ortho);
             hudShader.setUniform("projModelMatrix", projModelMatrix);
             hudShader.setUniform("color", text.getMaterial().getAmbientColour());
 

@@ -73,7 +73,7 @@ public class RenderedText implements Renderable {
     public RenderedText(String text, int fontHeight) {
 
         this.text = text;
-        this.material = new Material(new Vector4f(1.0f,1.0f,1.0f,.75f), 0.0f);
+        this.material = new Material(new Vector4f(0.0f,0.0f,0.0f,.50f), 0.0f);
 
         try {
             ttf = ioResourceToByteBuffer("resources/fonts/FiraSans.ttf", 160 * 1024);

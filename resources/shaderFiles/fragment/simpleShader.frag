@@ -64,7 +64,7 @@ if (material.hasTexture == 1)
         diffuseC = ambientC;
         speculrC = ambientC;
 
-        if (ambientC.rgb == vec3(0.0,0.0,0.0))
+        if (ambientC.r < .075 && ambientC.g < .075 && ambientC.b < .075) // vec3(0.0,0.0,0.0))
               discard;
     }
     else
