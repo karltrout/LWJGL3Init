@@ -6,11 +6,11 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="LWJGL3Init" />
+        <module name="KPHX-3D" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="LWJGL3Init" target="1.8" />
+      <module name="KPHX-3D" target="1.8" />
     </bytecodeTargetLevel>
   </component>
 </project>
